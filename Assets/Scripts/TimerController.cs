@@ -1,0 +1,107 @@
+using UnityEngine;
+
+/// <summary>
+/// TimerController — Maneja el cronómetro de cada minijuego.
+/// Cada minijuego tiene su propio tiempo límite.
+/// Al llegar a 0 notifica a LifeManager para restar una vida.
+/// </summary>
+public class TimerController : MonoBehaviour
+{
+    // -------------------------------------------------------
+    // SINGLETON
+    // -------------------------------------------------------
+    public static TimerController Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    // -------------------------------------------------------
+    // VARIABLES DE ESTADO
+    // -------------------------------------------------------
+    private float timer;           // Tiempo restante actual
+    private float maxTime;         // Tiempo inicial del minijuego
+    private bool isRunning = false;
+
+    // PENDIENTE: definir los tiempos por nivel con el equipo
+    // Ejemplo orientativo:
+    // Nivel 1 (Reconnect)   → 30 segundos
+    // Nivel 2 (File Catcher)→ 45 segundos (tiempo de supervivencia)
+    // Nivel 3 (Debug Smash) → 30 segundos
+
+    // PENDIENTE: definir si la dificultad progresiva reduce el tiempo
+    // entre minijuegos del mismo nivel o entre niveles distintos.
+
+    // -------------------------------------------------------
+    // CONTROL DEL TIMER
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Iniciar el cronómetro con un tiempo dado.
+    /// Llamar al inicio de cada minijuego.
+    /// </summary>
+    public void StartTimer(float time)
+    {
+        maxTime = time;
+        timer = time;
+        isRunning = true;
+    }
+
+    private void Update()
+    {
+        if (!isRunning) return;
+
+        timer -= Time.deltaTime;
+
+        // UIManager.Instance.UpdateTimerBar(timer, maxTime); // Actualizar barra de progreso
+
+        // PENDIENTE: ¿se agrega feedback visual/sonoro cuando el tiempo está por acabarse?
+        // Ejemplo: barra roja o sonido de alerta al llegar a 5 segundos.
+        // if (timer <= 5f)
+        // {
+        //     UIManager.Instance.ShowTimerWarning();
+        //     AudioManager.Instance.PlayTimerWarning();
+        // }
+
+        if (timer <= 0f)
+        {
+            timer = 0f;
+            isRunning = false;
+            OnTimerExpired();
+        }
+    }
+
+    /// <summary>
+    /// Se ejecuta cuando el tiempo llega a 0.
+    /// Resta una vida al jugador.
+    /// </summary>
+    private void OnTimerExpired()
+    {
+        // LifeManager.Instance.LoseLife();
+
+        // PENDIENTE: ¿el minijuego se reinicia, se salta o termina el nivel al agotar el tiempo?
+    }
+
+    /// <summary>
+    /// Detener el cronómetro manualmente.
+    /// Llamar cuando el jugador completa el minijuego antes de que acabe el tiempo.
+    /// </summary>
+    public void StopTimer()
+    {
+        isRunning = false;
+    }
+
+    // -------------------------------------------------------
+    // UTILIDADES
+    // -------------------------------------------------------
+    public float GetTimer() => timer;
+    public float GetMaxTime() => maxTime;
+}
