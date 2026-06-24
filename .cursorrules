@@ -1,0 +1,7 @@
+# Reglas del Asistente de IA (Cursor)
+
+Este proyecto utiliza reglas centralizadas para agentes de IA en el archivo `.agents/AGENTS.md`. 
+Por favor, lee y aplica estrictamente todas las pautas de desarrollo, arquitectura de código, configuración de pixel art y del sistema de UI definidas en ese archivo para mantener la consistencia del proyecto.
+
+Puedes encontrar el archivo completo aquí:
+- [.agents/AGENTS.md](file://./.agents/AGENTS.md)
