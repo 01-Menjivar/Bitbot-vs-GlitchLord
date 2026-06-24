@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
     // VARIABLES DE ESTADO
     // -------------------------------------------------------
     private int currentLevel = 1;
-    private const int TOTAL_LEVELS = 3; // Sala de Servidores, Red de Datos, Base de Datos Central
+    private const int TOTAL_LEVELS = 2; // Nivel 1: Red de Datos (File Catcher), Nivel 2: Base de Datos Central (Debug Smash)
 
     // -------------------------------------------------------
     // FLUJO DE NIVELES
