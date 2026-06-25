@@ -11,8 +11,8 @@ public class PrefabBuilder
         Debug.Log("Play mode stopped.");
     }
 
-    [MenuItem("Tools/Create Virus Prefab")]
-    public static void CreateVirusPrefab()
+    [MenuItem("Tools/Create Bug Prefabs")]
+    public static void CreateBugPrefabs()
     {
         string folderPath = "Assets/Prefabs";
         if (!Directory.Exists(folderPath))
@@ -21,18 +21,25 @@ public class PrefabBuilder
             AssetDatabase.Refresh();
         }
 
-        // Create virus_normal
+        // Create bug_1
         CreateSinglePrefab(
-            "Assets/Art/Enemies/Virus/Idle_Virus.png",
-            "virus_normal",
-            Path.Combine(folderPath, "virus_normal.prefab")
+            "Assets/Art/Enemies/enemy-bug-1.png",
+            "bug_1",
+            Path.Combine(folderPath, "bug_1.prefab")
         );
 
-        // Create virus_tank
+        // Create bug_2
         CreateSinglePrefab(
-            "Assets/Art/Enemies/Virus/Tank_Virus.png",
-            "virus_tank",
-            Path.Combine(folderPath, "virus_tank.prefab")
+            "Assets/Art/Enemies/enemy-bug-2.png",
+            "bug_2",
+            Path.Combine(folderPath, "bug_2.prefab")
+        );
+
+        // Create bug_3
+        CreateSinglePrefab(
+            "Assets/Art/Enemies/enemy-bug-3.png",
+            "bug_3",
+            Path.Combine(folderPath, "bug_3.prefab")
         );
 
         AssetDatabase.SaveAssets();
