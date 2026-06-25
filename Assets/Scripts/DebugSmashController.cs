@@ -1,177 +1,152 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// DebugSmashController — Controla el minijuego 3: "Debug Smash — Eliminar Bugs de la Pantalla".
 /// Nivel 3: Base de Datos Central.
-///
-/// Mecánica base (según reporte):
-/// - Bugs aparecen en posiciones aleatorias en pantalla.
-/// - El jugador hace clic sobre cada bug para eliminarlo.
-/// - Los bugs pueden desaparecer o multiplicarse si no se eliminan a tiempo.
-/// - Algunos bugs son más rápidos o más pequeños que otros.
-/// - La dificultad aumenta con la cantidad de bugs simultáneos y velocidad de aparición.
-/// - PENDIENTE: Oscar define los tipos de bug (normal, especial) y sus comportamientos exactos.
 /// </summary>
 public class DebugSmashController : MonoBehaviour
 {
-    // -------------------------------------------------------
-    // VARIABLES DE ESTADO
-    // -------------------------------------------------------
+    [Header("Configuración de Victoria")]
+    [SerializeField] private int bugsRequired = 10; // Cantidad de bugs a eliminar para ganar
+    [SerializeField] private float gameDuration = 30f; // Tiempo límite en segundos
+
     private bool isMinigameActive = false;
+    private int bugsDestroyed = 0;
+    private BugSpawner spawner;
 
-    // Progreso del minijuego
-    // private int bugsDestroyed = 0;
-    // private int bugsRequired; // PENDIENTE: Oscar define cuántos bugs hay que eliminar
+    private void Awake()
+    {
+        spawner = GetComponent<BugSpawner>();
+    }
 
-    // Control de bugs activos en pantalla
-    // private List<GameObject> activeBugs = new List<GameObject>();
-    // private int maxBugsOnScreen; // PENDIENTE: definir límite máximo simultáneo
+    private void Update()
+    {
+        if (!isMinigameActive) return;
 
-    // Dificultad progresiva
-    // private float spawnInterval;      // Tiempo entre aparición de bugs
-    // private float bugLifetime;        // Tiempo antes de que un bug desaparezca o se multiplique
-    // PENDIENTE: definir valores y curva de escalado con el equipo
-
-    // -------------------------------------------------------
-    // INICIO DEL MINIJUEGO
-    // -------------------------------------------------------
+        DetectClick();
+    }
 
     /// <summary>
-    /// Inicializa el minijuego. Llamar desde GameManager al cargar el Nivel 3.
+    /// Inicializa el minijuego. Llamado al finalizar la animación de introducción del monitor.
     /// </summary>
     public void StartMinigame()
     {
         isMinigameActive = true;
-        // bugsDestroyed = 0;
+        bugsDestroyed = 0;
 
-        // PENDIENTE: iniciar spawner de bugs
-        // PENDIENTE: definir área de aparición (coordenadas del Tilemap Nivel 3)
-        // TimerController.Instance.StartTimer(tiempoDefinidoPorEquipo);
-        // UIManager.Instance.ShowMinigameInstruction("¡Elimina todos los bugs antes de que se multipliquen!");
+        // Iniciar el generador de bugs
+        if (spawner != null)
+        {
+            spawner.StartSpawning();
+        }
+        else
+        {
+            Debug.LogError("DebugSmashController: No se encontró el componente BugSpawner.");
+        }
+
+        // Iniciar el temporizador del nivel
+        if (TimerController.Instance != null)
+        {
+            TimerController.Instance.StartTimer(gameDuration);
+        }
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowMinigameInstruction("¡Elimina todos los bugs antes de que se acabe el tiempo!");
+        }
     }
 
-    // -------------------------------------------------------
-    // SPAWNER DE BUGS
-    // -------------------------------------------------------
-
     /// <summary>
-    /// Genera bugs en posiciones aleatorias dentro del área de juego.
-    /// PENDIENTE: Oscar define los tipos de bug y sus propiedades (tamaño, velocidad, comportamiento).
-    /// PENDIENTE: definir si el spawner es un script separado (BugSpawner.cs).
-    /// </summary>
-    private void SpawnBug()
-    {
-        // Elegir tipo de bug aleatoriamente (normal o especial)
-        // Instanciar prefab en posición aleatoria dentro del área definida en el Tilemap
-        // PENDIENTE: los prefabs de bug los define Oscar en Assets/Art/Enemies
-    }
-
-    // -------------------------------------------------------
-    // DETECCIÓN DE CLIC SOBRE UN BUG
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Detecta el clic del jugador sobre un bug y lo elimina.
-    /// PENDIENTE: definir si la detección es por Raycast desde la cámara o por OnMouseDown en cada bug.
-    /// Se recomienda un script individual por bug (BugController.cs) que maneje su propio clic.
+    /// Detecta el clic o tap del jugador sobre un bug en el espacio 2D.
     /// </summary>
     private void DetectClick()
     {
-        // if (Input.GetMouseButtonDown(0))
-        // {
-        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //     RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-        //     if (hit.collider != null && hit.collider.CompareTag("Bug"))
-        //     {
-        //         OnBugClicked(hit.collider.gameObject);
-        //     }
-        // }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+
+            // Realizar un Raycast 2D en el punto del cursor
+            RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+            if (hit.collider != null)
+            {
+                BugHealth bugHealth = hit.collider.GetComponent<BugHealth>();
+                if (bugHealth != null)
+                {
+                    // Infligir daño al bug (1 punto por clic)
+                    bugHealth.TakeDamage(1);
+                }
+            }
+        }
     }
 
     /// <summary>
-    /// Se ejecuta al hacer clic exitosamente sobre un bug.
+    /// Callback llamado por BugHealth cuando un bug muere (su vida llega a 0).
     /// </summary>
-    private void OnBugClicked(GameObject bug)
+    public void OnBugDestroyed(GameObject bug)
     {
-        // bugsDestroyed++;
-        // AudioManager.Instance.PlaySFX(sfxBugDestroyed);
-        // activeBugs.Remove(bug);
-        // Destroy(bug);
-        // CheckMinigameComplete();
+        if (!isMinigameActive) return;
 
-        // PENDIENTE: ¿hay feedback visual al eliminar un bug (explosión, partículas)?
+        bugsDestroyed++;
+        CheckMinigameComplete();
     }
 
-    // -------------------------------------------------------
-    // COMPORTAMIENTO DE BUGS (tiempo de vida)
-    // -------------------------------------------------------
-
     /// <summary>
-    /// Maneja lo que ocurre si un bug no es eliminado a tiempo.
-    /// PENDIENTE: Oscar define si el bug desaparece, se multiplica, o ambos según el tipo.
+    /// Callback opcional por si se quiere reaccionar cuando un bug expira sin ser eliminado.
     /// </summary>
-    private void OnBugExpired(GameObject bug)
+    public void OnBugExpired(GameObject bug)
     {
-        // Opción A: el bug desaparece (se escapó)
-        // activeBugs.Remove(bug);
-        // Destroy(bug);
-
-        // Opción B: el bug se multiplica (genera 1 o 2 bugs adicionales)
-        // SpawnBug();
-        // SpawnBug();
-
-        // PENDIENTE: decidir cuál aplica por tipo de bug con Oscar.
+        // El daño al jugador ya es manejado de manera independiente por BugHealth.cs llamando al LifeManager.
     }
 
-    // -------------------------------------------------------
-    // DIFICULTAD PROGRESIVA
-    // -------------------------------------------------------
-
     /// <summary>
-    /// Aumenta la cantidad y velocidad de aparición de bugs con el tiempo.
-    /// PENDIENTE: definir la curva de escalado con el equipo.
-    /// </summary>
-    private void IncreaseDifficulty()
-    {
-        // spawnInterval = Mathf.Max(spawnInterval - incremento, minSpawnInterval);
-        // maxBugsOnScreen++;
-        // PENDIENTE: ¿también se reduce el bugLifetime conforme avanza el tiempo?
-    }
-
-    // -------------------------------------------------------
-    // CONDICIÓN DE VICTORIA DEL MINIJUEGO
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Verifica si se cumplió la condición de victoria.
-    /// PENDIENTE: definir si se gana eliminando X bugs o sobreviviendo el tiempo completo.
+    /// Verifica si se cumple la condición de victoria.
     /// </summary>
     private void CheckMinigameComplete()
     {
-        // if (bugsDestroyed >= bugsRequired)
-        // {
-        //     EndMinigame();
-        // }
+        if (bugsDestroyed >= bugsRequired)
+        {
+            EndMinigame(true);
+        }
     }
-
-    private void EndMinigame()
-    {
-        isMinigameActive = false;
-        // TimerController.Instance.StopTimer();
-        // GameManager.Instance.OnLevelComplete();
-    }
-
-    // -------------------------------------------------------
-    // CONDICIÓN DE DERROTA (Timer expirado)
-    // -------------------------------------------------------
 
     /// <summary>
-    /// Llamar desde TimerController cuando el tiempo llega a 0.
-    /// PENDIENTE: igual que en FileCatcher, depende de si la victoria es por cantidad o por tiempo.
+    /// Finaliza el minijuego de forma exitosa o fallida.
+    /// </summary>
+    private void EndMinigame(bool success)
+    {
+        isMinigameActive = false;
+
+        // Detener spawneo y limpiar bugs restantes
+        if (spawner != null)
+        {
+            spawner.StopSpawning();
+            spawner.ClearActiveBugs();
+        }
+
+        // Detener temporizador
+        if (TimerController.Instance != null)
+        {
+            TimerController.Instance.StopTimer();
+        }
+
+        if (success)
+        {
+            Debug.Log("DebugSmash completed successfully!");
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnLevelComplete();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Callback llamado por TimerController cuando el cronómetro llega a 0.
     /// </summary>
     public void OnTimerExpired()
     {
-        isMinigameActive = false;
-        // LifeManager.Instance.LoseLife();
+        if (!isMinigameActive) return;
+        EndMinigame(false);
     }
 }
