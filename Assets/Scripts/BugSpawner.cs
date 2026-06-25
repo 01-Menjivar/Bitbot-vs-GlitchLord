@@ -21,8 +21,16 @@ public class BugSpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 2.0f;
     [SerializeField] private bool spawnOnStart = false;
 
+    [Header("Escalado de Dificultad")]
+    [SerializeField] private float minSpawnInterval = 0.6f;
+    [SerializeField] private float spawnIntervalDecay = 0.04f; // Reducción de intervalo por segundo
+    [SerializeField] private float speedIncreaseFactor = 0.03f; // +3% velocidad por segundo
+    [SerializeField] private float hpIncreaseInterval = 10.0f; // Cada 10 segundos aumenta +1 HP
+
     private Coroutine spawnCoroutine;
     private List<GameObject> activeBugs = new List<GameObject>();
+    private bool isSpawning = false;
+    private float elapsedTime = 0f;
 
     private void Awake()
     {
@@ -60,6 +68,14 @@ public class BugSpawner : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (isSpawning)
+        {
+            elapsedTime += Time.deltaTime;
+        }
+    }
+
     /// <summary>
     /// Comienza a spawnear bugs de forma periódica.
     /// </summary>
@@ -67,6 +83,8 @@ public class BugSpawner : MonoBehaviour
     {
         if (spawnCoroutine == null)
         {
+            isSpawning = true;
+            elapsedTime = 0f;
             spawnCoroutine = StartCoroutine(SpawnRoutine());
         }
     }
@@ -76,6 +94,7 @@ public class BugSpawner : MonoBehaviour
     /// </summary>
     public void StopSpawning()
     {
+        isSpawning = false;
         if (spawnCoroutine != null)
         {
             StopCoroutine(spawnCoroutine);
@@ -102,7 +121,8 @@ public class BugSpawner : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(spawnInterval);
+            float currentInterval = Mathf.Max(minSpawnInterval, spawnInterval - (elapsedTime * spawnIntervalDecay));
+            yield return new WaitForSeconds(currentInterval);
             SpawnBug();
         }
     }
@@ -164,11 +184,26 @@ public class BugSpawner : MonoBehaviour
             bugSR.sortingOrder = 6;
         }
 
-        // Inicializar el comportamiento de movimiento (límites del monitor)
+        // Inicializar el comportamiento de movimiento (límites del monitor) y aplicar escalado de velocidad
         BugBehavior bugBehavior = spawnedBug.GetComponent<BugBehavior>();
         if (bugBehavior != null)
         {
             bugBehavior.Initialize(minX, maxX, minY, maxY);
+
+            // Escalar la velocidad según el tiempo transcurrido
+            float speedMultiplier = 1.0f + (elapsedTime * speedIncreaseFactor);
+            bugBehavior.SetSpeed(bugBehavior.GetSpeed() * speedMultiplier);
+        }
+
+        // Escalar la vida máxima según el tiempo transcurrido
+        BugHealth bugHealth = spawnedBug.GetComponent<BugHealth>();
+        if (bugHealth != null)
+        {
+            int extraHP = Mathf.FloorToInt(elapsedTime / hpIncreaseInterval);
+            if (extraHP > 0)
+            {
+                bugHealth.SetMaxHealth(bugHealth.GetMaxHealth() + extraHP);
+            }
         }
 
         activeBugs.Add(spawnedBug);

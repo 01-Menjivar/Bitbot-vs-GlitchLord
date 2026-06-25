@@ -50,6 +50,11 @@ public class BugBehavior : MonoBehaviour
         speed = newSpeed;
     }
 
+    /// <summary>
+    /// Devuelve la velocidad actual de movimiento.
+    /// </summary>
+    public float GetSpeed() => speed;
+
     private void Update()
     {
         if (!isInitialized) return;
