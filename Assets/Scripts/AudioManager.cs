@@ -31,23 +31,19 @@ public class AudioManager : MonoBehaviour
     private AudioSource musicSource; // Para música de fondo (BGM)
     private AudioSource sfxSource;   // Para efectos de sonido (SFX)
 
-    // PENDIENTE: Fabio define y entrega los AudioClips en Assets/Audio
-    // Ejemplo de referencias a asignar desde el Inspector de Unity:
-    // [SerializeField] private AudioClip menuTheme;
-    // [SerializeField] private AudioClip level1Theme; // Tech Ambient
-    // [SerializeField] private AudioClip level2Theme; // Synthwave
-    // [SerializeField] private AudioClip level3Theme; // Glitch Electronic
+    [Header("Música de Fondo (BGM)")]
+    [SerializeField] private AudioClip menuTheme;
+    [SerializeField] private AudioClip level1Theme; // Red de Datos (File Catcher)
+    [SerializeField] private AudioClip level2Theme; // Base de Datos Central (Debug Smash)
 
-    // SFX — según lista de Fabio:
-    // [SerializeField] private AudioClip sfxClick;
-    // [SerializeField] private AudioClip sfxError;
-    // [SerializeField] private AudioClip sfxCableConnected;
-    // [SerializeField] private AudioClip sfxCableWrong;
-    // [SerializeField] private AudioClip sfxFileCaught;
-    // [SerializeField] private AudioClip sfxVirusHit;
-    // [SerializeField] private AudioClip sfxBugDestroyed;
-    // [SerializeField] private AudioClip sfxVictory;
-    // [SerializeField] private AudioClip sfxGameOver;
+    [Header("Efectos de Sonido (SFX)")]
+    [SerializeField] private AudioClip sfxClick;
+    [SerializeField] private AudioClip sfxError;
+    [SerializeField] private AudioClip sfxFileCaught;
+    [SerializeField] private AudioClip sfxVirusHit;
+    [SerializeField] private AudioClip sfxBugDestroyed;
+    [SerializeField] private AudioClip sfxVictory;
+    [SerializeField] private AudioClip sfxGameOver;
 
     private void Start()
     {

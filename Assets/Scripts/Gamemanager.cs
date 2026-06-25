@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
     // VARIABLES DE ESTADO
     // -------------------------------------------------------
     private int currentLevel = 1;
-    private const int TOTAL_LEVELS = 2; // Nivel 1: Red de Datos (File Catcher), Nivel 2: Base de Datos Central (Debug Smash)
+    private const int TOTAL_LEVELS = 2; // Red de Datos, Base de Datos Central
 
     // -------------------------------------------------------
     // FLUJO DE NIVELES
@@ -41,25 +41,23 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnLevelComplete()
     {
-        // PENDIENTE: ¿se muestra alguna animación/cinemática entre niveles antes de cargar?
-        // if (currentLevel < TOTAL_LEVELS)
-        // {
-        //     currentLevel++;
-        //     LoadNextLevel();
-        // }
-        // else
-        // {
-        //     TriggerVictory();
-        // }
+        if (currentLevel < TOTAL_LEVELS)
+        {
+            currentLevel++;
+            LoadNextLevel();
+        }
+        else
+        {
+            TriggerVictory();
+        }
     }
 
     /// <summary>
     /// Carga la escena del siguiente nivel.
-    /// PENDIENTE: confirmar nombres exactos de escenas con el equipo.
     /// </summary>
     private void LoadNextLevel()
     {
-        // SceneManager.LoadScene("Level" + currentLevel);
+        SceneManager.LoadScene("Level" + currentLevel);
     }
 
     // -------------------------------------------------------
@@ -67,24 +65,24 @@ public class GameManager : MonoBehaviour
     // -------------------------------------------------------
 
     /// <summary>
-    /// Se activa al completar los 3 niveles.
-    /// PENDIENTE: definir si hay animación de victoria antes de cambiar escena.
+    /// Se activa al completar los niveles del juego.
     /// </summary>
     public void TriggerVictory()
     {
-        // SceneManager.LoadScene("VictoryScreen");
+        SceneManager.LoadScene("VictoryScreen");
     }
 
     /// <summary>
     /// Se activa cuando LifeManager reporta 0 vidas.
     /// Debe mostrar la animación de Pantalla Azul de la Muerte (BSOD).
-    /// PENDIENTE: definir si GameManager llama directamente a la escena
-    /// o si primero notifica a UIManager para reproducir la animación BSOD.
     /// </summary>
     public void TriggerGameOver()
     {
-        // UIManager.Instance.ShowBSOD(); // Mostrar animación primero (si aplica)
-        // SceneManager.LoadScene("GameOverScreen");
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowBSOD();
+        }
+        SceneManager.LoadScene("GameOverScreen");
     }
 
     // -------------------------------------------------------

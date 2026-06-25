@@ -45,14 +45,19 @@ public class LifeManager : MonoBehaviour
         if (lives > 0)
         {
             lives--;
-            // UIManager.Instance.UpdateLivesHUD(lives); // Actualizar íconos en pantalla
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.UpdateLivesHUD(lives);
+            }
         }
 
-        // PENDIENTE: ¿hay animación/pausa breve al perder una vida antes de continuar?
-        // if (lives <= 0)
-        // {
-        //     GameManager.Instance.TriggerGameOver();
-        // }
+        if (lives <= 0)
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.TriggerGameOver();
+            }
+        }
     }
 
     // -------------------------------------------------------
@@ -67,6 +72,9 @@ public class LifeManager : MonoBehaviour
     public void ResetLives()
     {
         lives = MAX_LIVES;
-        // UIManager.Instance.UpdateLivesHUD(lives);
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateLivesHUD(lives);
+        }
     }
 }

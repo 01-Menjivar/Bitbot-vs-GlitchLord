@@ -61,15 +61,10 @@ public class TimerController : MonoBehaviour
 
         timer -= Time.deltaTime;
 
-        // UIManager.Instance.UpdateTimerBar(timer, maxTime); // Actualizar barra de progreso
-
-        // PENDIENTE: ¿se agrega feedback visual/sonoro cuando el tiempo está por acabarse?
-        // Ejemplo: barra roja o sonido de alerta al llegar a 5 segundos.
-        // if (timer <= 5f)
-        // {
-        //     UIManager.Instance.ShowTimerWarning();
-        //     AudioManager.Instance.PlayTimerWarning();
-        // }
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.UpdateTimerBar(timer, maxTime); // Actualizar barra de progreso
+        }
 
         if (timer <= 0f)
         {
@@ -85,9 +80,10 @@ public class TimerController : MonoBehaviour
     /// </summary>
     private void OnTimerExpired()
     {
-        // LifeManager.Instance.LoseLife();
-
-        // PENDIENTE: ¿el minijuego se reinicia, se salta o termina el nivel al agotar el tiempo?
+        if (LifeManager.Instance != null)
+        {
+            LifeManager.Instance.LoseLife();
+        }
     }
 
     /// <summary>
