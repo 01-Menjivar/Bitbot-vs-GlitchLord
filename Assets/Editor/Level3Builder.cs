@@ -15,9 +15,10 @@ public class Level3Builder : EditorWindow
         // 1. Crear una nueva escena vacía
         Scene newScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-        // Crear el objeto padre "Lvl3" y añadirle el controlador del nivel
+        // Crear el objeto padre "Lvl3" y añadirle el controlador del nivel y el gestor de efectos
         GameObject rootObj = new GameObject("Lvl3");
         rootObj.AddComponent<DebugSmashController>();
+        rootObj.AddComponent<Level3Effects>();
 
         // 2. Configurar la Cámara en 2D (Ortográfica)
         GameObject cameraObj = new GameObject("Main Camera");

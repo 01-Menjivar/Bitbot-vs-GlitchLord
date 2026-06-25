@@ -20,17 +20,37 @@ public class BugHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+
+        // Buscar el gestor de efectos del Level 3
+        Level3Effects effects = FindObjectOfType<Level3Effects>();
+
         if (currentHealth <= 0)
         {
+            if (effects != null)
+            {
+                effects.PlayDestructionEffect(transform.position);
+            }
             Die();
+        }
+        else
+        {
+            if (effects != null)
+            {
+                effects.PlayDamageEffect(gameObject);
+            }
         }
     }
 
     /// <summary>
-    /// Elimina al bug.
+    /// Elimina al bug y notifica al controlador del minijuego.
     /// </summary>
     private void Die()
     {
+        DebugSmashController controller = FindObjectOfType<DebugSmashController>();
+        if (controller != null)
+        {
+            controller.OnBugDestroyed(gameObject);
+        }
         Destroy(gameObject);
     }
 
