@@ -46,6 +46,13 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite coreActiveSprite;
     [SerializeField] private Sprite coreOfflineSprite;
 
+    // HUD — Puntuación (Score)
+    [Header("HUD — Score")]
+    [Tooltip("Imagen de marco del score (usa score.png como sprite)")]
+    [SerializeField] private Image scoreFrameImage;
+    [Tooltip("Texto numérico del puntaje dentro del marco")]
+    [SerializeField] private Text scoreText;
+
     // Pantallas
     [SerializeField] private GameObject victoryScreen;
     [SerializeField] private GameObject gameOverScreen; // Pantalla Azul de la Muerte (BSOD)
@@ -178,6 +185,22 @@ public class UIManager : MonoBehaviour
         if (gameOverScreen != null)
         {
             gameOverScreen.SetActive(true);
+        }
+    }
+
+    // -------------------------------------------------------
+    // HUD — PUNTUACIÓN (SCORE)
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Actualiza el texto del puntaje en el HUD.
+    /// Llamar desde ScoreManager cada vez que cambie la puntuación.
+    /// </summary>
+    public void UpdateScoreHUD(int score)
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = score.ToString("N0"); // Formato con separador de miles
         }
     }
 

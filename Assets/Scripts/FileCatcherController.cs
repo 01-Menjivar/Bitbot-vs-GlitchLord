@@ -80,6 +80,12 @@ public class FileCatcherController : MonoBehaviour
             UIManager.Instance.ShowMinigameInstruction("¡Atrapa los archivos y esquiva los virus!");
         }
 
+        // 5. Reiniciar la puntuación para este intento
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetScore();
+        }
+
         Debug.Log("[FileCatcherController] Minijuego File Catcher iniciado.");
     }
 

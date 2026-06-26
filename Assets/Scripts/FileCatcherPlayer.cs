@@ -23,7 +23,7 @@ public class FileCatcherPlayer : MonoBehaviour
     [SerializeField] private Sprite sadSprite;
     [SerializeField] private float damageFlashDuration = 0.8f;
 
-    private int score = 0;
+
     private SpriteRenderer spriteRenderer;
     private bool isHandlingDamage = false;
     private Vector3 originalScale;
@@ -62,9 +62,12 @@ public class FileCatcherPlayer : MonoBehaviour
         {
             if (fallingObject.IsValid())
             {
-                // Archivo Válido recolectado
-                score += 10;
-                Debug.Log($"[FileCatcherPlayer] ¡Archivo atrapado! Puntuación actual: {score}");
+                // Archivo Válido recolectado — sumar puntuación y tiempo
+                if (ScoreManager.Instance != null)
+                {
+                    ScoreManager.Instance.OnValidFileCaught();
+                }
+                Debug.Log($"[FileCatcherPlayer] ¡Archivo atrapado! Puntuación actual: {(ScoreManager.Instance != null ? ScoreManager.Instance.GetScore() : 0)}");
 
                 // Reproducir efecto de sonido de acierto
                 if (AudioManager.Instance != null && caughtSFX != null)
@@ -77,8 +80,14 @@ public class FileCatcherPlayer : MonoBehaviour
             }
             else
             {
-                // Virus golpeado
+                // Virus golpeado — restar puntuación y tiempo
                 Debug.LogWarning("[FileCatcherPlayer] ¡Virus golpeado! Perdiendo vida...");
+
+                // Registrar penalización de puntuación y tiempo en el ScoreManager
+                if (ScoreManager.Instance != null)
+                {
+                    ScoreManager.Instance.OnVirusHit();
+                }
 
                 // Reproducir efecto de sonido de daño
                 if (AudioManager.Instance != null && damageSFX != null)
@@ -196,5 +205,5 @@ public class FileCatcherPlayer : MonoBehaviour
     /// <summary>
     /// Retorna la puntuación actual del jugador en este nivel.
     /// </summary>
-    public int GetScore() => score;
+    public int GetScore() => ScoreManager.Instance != null ? ScoreManager.Instance.GetScore() : 0;
 }

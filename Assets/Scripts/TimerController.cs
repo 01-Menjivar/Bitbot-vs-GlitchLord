@@ -96,6 +96,41 @@ public class TimerController : MonoBehaviour
     }
 
     // -------------------------------------------------------
+    // MODIFICACIÓN DE TIEMPO EN VIVO
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Agrega tiempo extra al cronómetro (recompensa por atrapar archivos válidos).
+    /// El tiempo no puede superar el tiempo máximo original del nivel.
+    /// </summary>
+    public void AddTime(float seconds)
+    {
+        if (!isRunning) return;
+
+        timer += seconds;
+        // Limitar al tiempo máximo para evitar acumulación excesiva
+        timer = Mathf.Min(timer, maxTime);
+    }
+
+    /// <summary>
+    /// Resta tiempo del cronómetro (penalización por virus/archivos corruptos).
+    /// Si el tiempo resultante es menor o igual a 0, se activa la expiración.
+    /// </summary>
+    public void SubtractTime(float seconds)
+    {
+        if (!isRunning) return;
+
+        timer -= seconds;
+
+        if (timer <= 0f)
+        {
+            timer = 0f;
+            isRunning = false;
+            OnTimerExpired();
+        }
+    }
+
+    // -------------------------------------------------------
     // UTILIDADES
     // -------------------------------------------------------
     public float GetTimer() => timer;
