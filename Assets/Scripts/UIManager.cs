@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     {
         if (Instance == null)
         {
+            transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -35,9 +36,15 @@ public class UIManager : MonoBehaviour
 
     // HUD — Barra de tiempo
     [SerializeField] private Slider timerBar;
+    [SerializeField] private Text timerText;
+    [SerializeField] private Sprite barSpriteFull;
+    [SerializeField] private Sprite barSpriteWarning;
+    [SerializeField] private Sprite barSpriteCritical;
 
     // HUD — Iconos de vidas (núcleos de procesador)
     [SerializeField] private Image[] lifeIcons; // Array de 3 iconos
+    [SerializeField] private Sprite coreActiveSprite;
+    [SerializeField] private Sprite coreOfflineSprite;
 
     // Pantallas
     [SerializeField] private GameObject victoryScreen;
@@ -50,14 +57,44 @@ public class UIManager : MonoBehaviour
     // -------------------------------------------------------
 
     /// <summary>
-    /// Actualiza la barra de progreso del cronómetro.
+    /// Actualiza la barra de progreso del cronómetro y el texto del tiempo.
     /// Llamar desde TimerController en cada frame.
     /// </summary>
     public void UpdateTimerBar(float currentTime, float maxTime)
     {
+        // 1. Actualizar barra de progreso si está configurada
         if (timerBar != null && maxTime > 0f)
         {
-            timerBar.value = currentTime / maxTime;
+            float fillRatio = currentTime / maxTime;
+            timerBar.value = fillRatio;
+
+            // Cambiar el sprite de relleno según el porcentaje de tiempo restante
+            if (timerBar.fillRect != null)
+            {
+                Image fillImage = timerBar.fillRect.GetComponent<Image>();
+                if (fillImage != null)
+                {
+                    if (fillRatio <= 0.25f && barSpriteCritical != null)
+                    {
+                        fillImage.sprite = barSpriteCritical;
+                    }
+                    else if (fillRatio <= 0.5f && barSpriteWarning != null)
+                    {
+                        fillImage.sprite = barSpriteWarning;
+                    }
+                    else if (barSpriteFull != null)
+                    {
+                        fillImage.sprite = barSpriteFull;
+                    }
+                }
+            }
+        }
+
+        // 2. Actualizar el cronómetro numérico (sobreescritura del HUD_Timer estático)
+        if (timerText != null)
+        {
+            int seconds = Mathf.Max(0, Mathf.CeilToInt(currentTime));
+            timerText.text = $"00:{seconds:D2}";
         }
     }
 
@@ -86,7 +123,30 @@ public class UIManager : MonoBehaviour
             {
                 if (lifeIcons[i] != null)
                 {
-                    lifeIcons[i].enabled = (i < currentLives);
+                    if (i < currentLives)
+                    {
+                        if (coreActiveSprite != null)
+                        {
+                            lifeIcons[i].sprite = coreActiveSprite;
+                            lifeIcons[i].enabled = true;
+                        }
+                        else
+                        {
+                            lifeIcons[i].enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        if (coreOfflineSprite != null)
+                        {
+                            lifeIcons[i].sprite = coreOfflineSprite;
+                            lifeIcons[i].enabled = true;
+                        }
+                        else
+                        {
+                            lifeIcons[i].enabled = false;
+                        }
+                    }
                 }
             }
         }
