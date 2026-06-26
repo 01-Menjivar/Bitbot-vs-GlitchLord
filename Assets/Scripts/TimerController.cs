@@ -110,6 +110,12 @@ public class TimerController : MonoBehaviour
         timer += seconds;
         // Limitar al tiempo máximo para evitar acumulación excesiva
         timer = Mathf.Min(timer, maxTime);
+
+        // Disparar feedback de tiempo ganado en el HUD
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.TriggerTimerFeedback(true);
+        }
     }
 
     /// <summary>
@@ -121,6 +127,12 @@ public class TimerController : MonoBehaviour
         if (!isRunning) return;
 
         timer -= seconds;
+
+        // Disparar feedback de tiempo perdido en el HUD
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.TriggerTimerFeedback(false);
+        }
 
         if (timer <= 0f)
         {

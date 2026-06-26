@@ -218,4 +218,82 @@ public class UIManager : MonoBehaviour
         // instructionText.text = instruction;
         // PENDIENTE: ¿cuántos segundos se muestra antes de iniciar el timer?
     }
+
+    // -------------------------------------------------------
+    // FEEDBACK VISUAL DEL TEMPORIZADOR
+    // -------------------------------------------------------
+
+    [Header("Configuración de Feedback del Timer")]
+    [SerializeField] private Color timeGainedColor = new Color(0.2f, 1f, 0.4f);  // Verde neón
+    [SerializeField] private Color timeLostColor = new Color(1f, 0.2f, 0.2f);    // Rojo neón
+    [SerializeField] private float timerPulseDuration = 0.5f;
+    [SerializeField] private float timerPunchScale = 1.25f;
+
+    private Coroutine timerFeedbackCoroutine;
+    private Color originalTimerTextColor = Color.white;
+    private Vector3 originalTimerTextScale = Vector3.one;
+    private Text lastTimerText;
+
+    /// <summary>
+    /// Activa el feedback visual (color y escala) en el texto del temporizador.
+    /// </summary>
+    /// <param name="isPositive">true si se ganó tiempo, false si se perdió tiempo.</param>
+    public void TriggerTimerFeedback(bool isPositive)
+    {
+        if (timerText == null) return;
+
+        // Si el objeto Text ha cambiado o es el primero, guardamos sus valores originales
+        if (timerText != lastTimerText)
+        {
+            originalTimerTextColor = timerText.color;
+            originalTimerTextScale = timerText.transform.localScale;
+            lastTimerText = timerText;
+        }
+
+        if (timerFeedbackCoroutine != null)
+        {
+            StopCoroutine(timerFeedbackCoroutine);
+        }
+
+        timerFeedbackCoroutine = StartCoroutine(TimerFeedbackCoroutine(isPositive));
+    }
+
+    private System.Collections.IEnumerator TimerFeedbackCoroutine(bool isPositive)
+    {
+        Color flashColor = isPositive ? timeGainedColor : timeLostColor;
+        float elapsed = 0f;
+
+        // Establecer color de inicio de flash y escala original
+        timerText.color = flashColor;
+        timerText.transform.localScale = originalTimerTextScale;
+
+        while (elapsed < timerPulseDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / timerPulseDuration;
+
+            // Curva de escala tipo "punch" (crece rápido al inicio y regresa lento)
+            float scaleMultiplier = 1f;
+            if (t < 0.3f)
+            {
+                scaleMultiplier = Mathf.Lerp(1f, timerPunchScale, t / 0.3f);
+            }
+            else
+            {
+                scaleMultiplier = Mathf.Lerp(timerPunchScale, 1f, (t - 0.3f) / 0.7f);
+            }
+
+            timerText.transform.localScale = originalTimerTextScale * scaleMultiplier;
+
+            // Interpolación de color de regreso al color original
+            timerText.color = Color.Lerp(flashColor, originalTimerTextColor, t);
+
+            yield return null;
+        }
+
+        // Asegurar restablecimiento final
+        timerText.color = originalTimerTextColor;
+        timerText.transform.localScale = originalTimerTextScale;
+        timerFeedbackCoroutine = null;
+    }
 }

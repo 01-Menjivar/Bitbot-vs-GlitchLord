@@ -54,20 +54,47 @@ public class ScoreManager : MonoBehaviour
     // -------------------------------------------------------
 
     /// <summary>
-    /// Registra la captura de un archivo válido (azul/verde).
-    /// Suma puntuación y agrega tiempo extra al cronómetro.
+    /// Registra la captura de un archivo válido (azul/verde/dorado).
+    /// Suma puntuación y agrega tiempo extra al cronómetro según su tipo.
     /// </summary>
-    public void OnValidFileCaught()
+    public void OnValidFileCaught(FallingObject.FileType type)
     {
-        AddScore(pointsPerValidFile);
+        int scoreReward = pointsPerValidFile;
+        float timeReward = timeRewardPerValidFile;
+
+        switch (type)
+        {
+            case FallingObject.FileType.BlueFile:
+                scoreReward = 50;
+                timeReward = 1.5f;
+                break;
+            case FallingObject.FileType.GreenFile:
+                scoreReward = 100;
+                timeReward = 3.0f;
+                break;
+            case FallingObject.FileType.GoldFile:
+                scoreReward = 500;
+                timeReward = 8.0f;
+                break;
+        }
+
+        AddScore(scoreReward);
 
         // Agregar tiempo extra al cronómetro
         if (TimerController.Instance != null)
         {
-            TimerController.Instance.AddTime(timeRewardPerValidFile);
+            TimerController.Instance.AddTime(timeReward);
         }
 
-        Debug.Log($"[ScoreManager] +{pointsPerValidFile} puntos, +{timeRewardPerValidFile}s tiempo. Total: {currentScore}");
+        Debug.Log($"[ScoreManager] Atrapar archivo ({type}): +{scoreReward} puntos, +{timeReward}s tiempo. Total: {currentScore}");
+    }
+
+    /// <summary>
+    /// Sobrecarga para mantener compatibilidad hacia atrás. Por defecto asume un archivo azul.
+    /// </summary>
+    public void OnValidFileCaught()
+    {
+        OnValidFileCaught(FallingObject.FileType.BlueFile);
     }
 
     /// <summary>

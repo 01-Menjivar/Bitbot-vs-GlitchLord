@@ -114,7 +114,7 @@ public class FileSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// Instancia un archivo o virus en un punto X aleatorio de la zona de aparición.
+    /// Instancia un archivo o virus en un punto X aleatorio de la zona de aparición con patrones y tipos dinámicos.
     /// </summary>
     private void SpawnFile()
     {
@@ -138,22 +138,63 @@ public class FileSpawner : MonoBehaviour
         // Instanciar
         GameObject spawnedObj = Instantiate(prefabToInstantiate, spawnPosition, Quaternion.identity);
 
-        // Inicializar la velocidad y el estado del FallingObject
+        // Inicializar la velocidad, el patrón de movimiento y el tipo en el FallingObject
         FallingObject fallingComponent = spawnedObj.GetComponent<FallingObject>();
         if (fallingComponent != null)
         {
-            fallingComponent.Initialize(currentFallSpeed, !isVirus);
-        }
-
-        // Aplicar tintes de color si es un archivo válido (alterna entre azul o verde)
-        if (!isVirus)
-        {
-            SpriteRenderer spriteRenderer = spawnedObj.GetComponent<SpriteRenderer>();
-            if (spriteRenderer != null)
+            // 1. Determinar tipo de archivo/objeto
+            FallingObject.FileType type;
+            if (isVirus)
             {
-                bool tintGreen = Random.value < 0.5f;
-                spriteRenderer.color = tintGreen ? new Color(0.4f, 1f, 0.6f) : new Color(0.4f, 0.7f, 1f);
+                type = FallingObject.FileType.Virus;
             }
+            else
+            {
+                float randVal = Random.value;
+                if (randVal < 0.05f) // 5% de probabilidad
+                {
+                    type = FallingObject.FileType.GoldFile;
+                }
+                else if (randVal < 0.30f) // 25% de probabilidad (0.05 a 0.30)
+                {
+                    type = FallingObject.FileType.GreenFile;
+                }
+                else // 70% de probabilidad (0.30 a 1.0)
+                {
+                    type = FallingObject.FileType.BlueFile;
+                }
+            }
+
+            // 2. Determinar patrón de movimiento
+            FallingObject.MovementPattern pattern = FallingObject.MovementPattern.Straight;
+            float patternRand = Random.value;
+
+            if (type == FallingObject.FileType.Virus)
+            {
+                // Virus: 40% Acelerado, 30% Diagonal, 30% Recto
+                if (patternRand < 0.4f) pattern = FallingObject.MovementPattern.Accelerating;
+                else if (patternRand < 0.7f) pattern = FallingObject.MovementPattern.Diagonal;
+                else pattern = FallingObject.MovementPattern.Straight;
+            }
+            else if (type == FallingObject.FileType.GoldFile)
+            {
+                // Dorado: 60% Vaivén Senoidal (Sway), 40% Diagonal
+                if (patternRand < 0.6f) pattern = FallingObject.MovementPattern.Sway;
+                else pattern = FallingObject.MovementPattern.Diagonal;
+            }
+            else
+            {
+                // Azul/Verde: 50% Recto, 30% Vaivén Senoidal (Sway), 20% Diagonal
+                if (patternRand < 0.5f) pattern = FallingObject.MovementPattern.Straight;
+                else if (patternRand < 0.8f) pattern = FallingObject.MovementPattern.Sway;
+                else pattern = FallingObject.MovementPattern.Diagonal;
+            }
+
+            // 3. Aplicar variación de velocidad base de ±20%
+            float speedMultiplier = Random.Range(0.8f, 1.2f);
+            float finalSpeed = currentFallSpeed * speedMultiplier;
+
+            fallingComponent.Initialize(finalSpeed, type, pattern);
         }
     }
 

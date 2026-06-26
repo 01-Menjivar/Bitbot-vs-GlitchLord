@@ -65,7 +65,7 @@ public class FileCatcherPlayer : MonoBehaviour
                 // Archivo Válido recolectado — sumar puntuación y tiempo
                 if (ScoreManager.Instance != null)
                 {
-                    ScoreManager.Instance.OnValidFileCaught();
+                    ScoreManager.Instance.OnValidFileCaught(fallingObject.GetFileType());
                 }
                 Debug.Log($"[FileCatcherPlayer] ¡Archivo atrapado! Puntuación actual: {(ScoreManager.Instance != null ? ScoreManager.Instance.GetScore() : 0)}");
 
