@@ -18,14 +18,18 @@ public class BugSpawner : MonoBehaviour
     [SerializeField] private float paddingBottom = 3.0f; // Margen inferior (más grande para el teclado)
 
     [Header("Configuración de Tiempos")]
-    [SerializeField] private float spawnInterval = 2.0f;
+    [SerializeField] private float spawnInterval = 1.2f;
     [SerializeField] private bool spawnOnStart = false;
 
-    [Header("Escalado de Dificultad")]
-    [SerializeField] private float minSpawnInterval = 0.6f;
-    [SerializeField] private float spawnIntervalDecay = 0.04f; // Reducción de intervalo por segundo
-    [SerializeField] private float speedIncreaseFactor = 0.01f; // +1% velocidad por segundo
-    [SerializeField] private float hpIncreaseInterval = 999.0f; // Desactivado
+    [Header("Dificultad Progresiva (HP de bugs)")]
+    [SerializeField] private int minBugHP = 1;
+    [SerializeField] private int maxBugHP = 1; // Al inicio solo 1 clic. Sube con el tiempo.
+    [SerializeField] private float hpIncreaseInterval = 15f; // Cada 15s sube el HP máximo en 1
+
+    [Header("Sprites de Estado de los Bugs")]
+    [SerializeField] private Sprite spriteIdle;
+    [SerializeField] private Sprite spriteDamaged;
+    [SerializeField] private Sprite spriteSpin;
 
     private Coroutine spawnCoroutine;
     private List<GameObject> activeBugs = new List<GameObject>();
@@ -121,8 +125,7 @@ public class BugSpawner : MonoBehaviour
     {
         while (true)
         {
-            float currentInterval = Mathf.Max(minSpawnInterval, spawnInterval - (elapsedTime * spawnIntervalDecay));
-            yield return new WaitForSeconds(currentInterval);
+            yield return new WaitForSeconds(spawnInterval);
             SpawnBug();
         }
     }
@@ -177,10 +180,10 @@ public class BugSpawner : MonoBehaviour
 
         GameObject spawnedBug = Instantiate(selectedPrefab, spawnPos, Quaternion.identity);
         
-        // Hacer los bugs más grandes (reducción de dificultad extrema)
+        // Los prefabs ya tienen escala 0.35. Multiplicamos x2.0 para hacerlos visibles pero no gigantes.
         spawnedBug.transform.localScale = new Vector3(
-            spawnedBug.transform.localScale.x * 2.5f,
-            spawnedBug.transform.localScale.y * 2.5f,
+            spawnedBug.transform.localScale.x * 2.0f,
+            spawnedBug.transform.localScale.y * 2.0f,
             spawnedBug.transform.localScale.z
         );
 
@@ -191,25 +194,25 @@ public class BugSpawner : MonoBehaviour
             bugSR.sortingOrder = 6;
         }
 
-        // Inicializar el comportamiento de movimiento (límites del monitor) y aplicar escalado de velocidad
+        // Inicializar el comportamiento de movimiento (límites del monitor)
         BugBehavior bugBehavior = spawnedBug.GetComponent<BugBehavior>();
         if (bugBehavior != null)
         {
             bugBehavior.Initialize(minX, maxX, minY, maxY);
-
-            // Escalar la velocidad según el tiempo transcurrido
-            float speedMultiplier = 1.0f + (elapsedTime * speedIncreaseFactor);
-            bugBehavior.SetSpeed(bugBehavior.GetSpeed() * speedMultiplier);
         }
 
-        // Escalar la vida máxima según el tiempo transcurrido
+        // Asignar HP variable según tiempo transcurrido
         BugHealth bugHealth = spawnedBug.GetComponent<BugHealth>();
         if (bugHealth != null)
         {
-            int extraHP = Mathf.FloorToInt(elapsedTime / hpIncreaseInterval);
-            if (extraHP > 0)
+            int currentMaxHP = Mathf.Min(minBugHP + Mathf.FloorToInt(elapsedTime / hpIncreaseInterval), maxBugHP);
+            int assignedHP = Random.Range(minBugHP, currentMaxHP + 1);
+            bugHealth.SetMaxHealth(assignedHP);
+
+            // Asignar sprites de estado si están configurados
+            if (spriteIdle != null || spriteDamaged != null || spriteSpin != null)
             {
-                bugHealth.SetMaxHealth(bugHealth.GetMaxHealth() + extraHP);
+                bugHealth.SetStateSprites(spriteIdle, spriteDamaged, spriteSpin);
             }
         }
 

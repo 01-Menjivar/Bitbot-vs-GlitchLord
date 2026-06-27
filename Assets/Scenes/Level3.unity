@@ -902,12 +902,14 @@ MonoBehaviour:
   paddingX: 2.4
   paddingTop: 1.6
   paddingBottom: 3
-  spawnInterval: 2
+  spawnInterval: 5
   spawnOnStart: 0
-  minSpawnInterval: 0.6
-  spawnIntervalDecay: 0.04
-  speedIncreaseFactor: 0.01
+  minBugHP: 1
+  maxBugHP: 1
   hpIncreaseInterval: 999
+  spriteIdle: {fileID: 21300000, guid: de90b9fd4207f41749e2a15fe31cdf5f, type: 3}
+  spriteDamaged: {fileID: 21300000, guid: 45823332342b84d8f9a33e8000241edd, type: 3}
+  spriteSpin: {fileID: 21300000, guid: 460d37a7f964c4d30bcdfe922b980af5, type: 3}
 --- !u!114 &572423963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -939,7 +941,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebugSmashController
   gameDuration: 30
   maxInfection: 100
-  infectionRatePerBug: 1.5
+  infectionRatePerBug: 2
   healPerBugKill: 10
   infectionBar: {fileID: 0}
   levelEffects: {fileID: 0}

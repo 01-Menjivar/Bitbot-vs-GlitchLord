@@ -46,13 +46,15 @@ public class BugBehavior : MonoBehaviour
 
     /// <summary>
     /// Inicializa las fronteras de movimiento permitidas en coordenadas del mundo.
+    /// El margen superior excluye la zona de la barra de infección UI.
     /// </summary>
     public void Initialize(float minX, float maxX, float minY, float maxY)
     {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY + 1.0f;
-        this.maxY = maxY;
+        // Restamos un margen adicional superior para no entrar en la barra de infección
+        this.maxY = maxY - 0.5f;
         isInitialized = true;
     }
 
