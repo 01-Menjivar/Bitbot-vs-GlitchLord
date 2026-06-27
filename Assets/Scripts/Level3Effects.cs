@@ -52,11 +52,9 @@ public class Level3Effects : MonoBehaviour
             originalBg = backgroundRenderer.sprite;
         }
 
-#if UNITY_EDITOR
-        vireusesBg = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Backgrounds/level 3/vireuses.png");
-        failBg = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Backgrounds/level 3/level 3 fail.png");
-        winBg = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Backgrounds/level 3/level 3 win.png");
-#endif
+        vireusesBg = Resources.Load<Sprite>("Backgrounds/level 3/vireuses");
+        failBg = Resources.Load<Sprite>("Backgrounds/level 3/level 3 fail");
+        winBg = Resources.Load<Sprite>("Backgrounds/level 3/level 3 win");
     }
 
     /// <summary>

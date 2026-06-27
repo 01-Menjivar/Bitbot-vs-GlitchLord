@@ -235,9 +235,7 @@ public class DebugSmashController : MonoBehaviour
         if (success)
         {
             Debug.Log("DebugSmash survived successfully!");
-            if (levelEffects != null) levelEffects.ShowVictoryBackground();
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
-            if (GameManager.Instance != null) GameManager.Instance.OnLevelComplete();
+            StartCoroutine(VictoryDelayRoutine());
         }
         else
         {
@@ -247,8 +245,31 @@ public class DebugSmashController : MonoBehaviour
             if (LifeManager.Instance != null)
             {
                 LifeManager.Instance.LoseLife(); 
+                if (LifeManager.Instance.GetLives() > 0)
+                {
+                    StartCoroutine(DefeatRetryDelayRoutine());
+                }
             }
         }
+    }
+
+    private System.Collections.IEnumerator VictoryDelayRoutine()
+    {
+        if (levelEffects != null) levelEffects.ShowVictoryBackground();
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
+        
+        yield return new WaitForSeconds(2.0f);
+        
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnLevelComplete();
+        }
+    }
+
+    private System.Collections.IEnumerator DefeatRetryDelayRoutine()
+    {
+        yield return new WaitForSeconds(2.0f);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
     public void OnTimerExpired()

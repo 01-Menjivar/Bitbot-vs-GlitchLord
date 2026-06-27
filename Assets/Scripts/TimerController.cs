@@ -1,4 +1,4 @@
-using UnityEngine;
+ using UnityEngine;
 
 /// <summary>
 /// TimerController — Maneja el cronómetro de cada minijuego.

@@ -9,13 +9,19 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenuScene.unity
     guid: af7aa35ef84974252a2fe522d6877423
   - enabled: 1
-    path: Assets/Scenes/Level1.unity
-    guid: 00000000000000000000000000000000
+    path: Assets/Scenes/LevelSelectionScene.unity
+    guid: d3b07384d11340b08000000000000000
   - enabled: 1
     path: Assets/Scenes/Level2.unity
-    guid: 00000000000000000000000000000000
+    guid: 2138be59a35f54d52bc5f0008128a04a
   - enabled: 1
     path: Assets/Scenes/Level3.unity
     guid: fd51200516b11b84a9666032bbebf349
+  - enabled: 1
+    path: Assets/Scenes/GameOverScreen.unity
+    guid: ac9d66b38a0c54388961d66e62a864ef
+  - enabled: 1
+    path: Assets/Scenes/VictoryScreen.unity
+    guid: 1ffbc8538dcda43db820f530c254bf6b
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

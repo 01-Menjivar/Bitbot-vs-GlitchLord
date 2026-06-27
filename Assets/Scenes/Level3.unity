@@ -902,7 +902,7 @@ MonoBehaviour:
   paddingX: 2.4
   paddingTop: 1.6
   paddingBottom: 3
-  spawnInterval: 5
+  spawnInterval: 1.2
   spawnOnStart: 0
   minBugHP: 1
   maxBugHP: 1
