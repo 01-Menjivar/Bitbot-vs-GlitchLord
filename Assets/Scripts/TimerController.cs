@@ -31,6 +31,8 @@ public class TimerController : MonoBehaviour
     private float maxTime;         // Tiempo inicial del minijuego
     private bool isRunning = false;
 
+    public System.Action onTimerExpiredCallback; // Callback para personalizar qué pasa al terminar el tiempo
+
     // PENDIENTE: definir los tiempos por nivel con el equipo
     // Ejemplo orientativo:
     // Nivel 1 (Reconnect)   → 30 segundos
@@ -80,8 +82,15 @@ public class TimerController : MonoBehaviour
     /// </summary>
     private void OnTimerExpired()
     {
-        if (LifeManager.Instance != null)
+        Debug.Log("[TC] OnTimerExpired - callback asignado: " + (onTimerExpiredCallback != null));
+        if (onTimerExpiredCallback != null)
         {
+            Debug.Log("[TC] Ejecutando callback personalizado (VICTORIA).");
+            onTimerExpiredCallback.Invoke();
+        }
+        else if (LifeManager.Instance != null)
+        {
+            Debug.Log("[TC] Sin callback. Llamando LoseLife().");
             LifeManager.Instance.LoseLife();
         }
     }
@@ -93,6 +102,53 @@ public class TimerController : MonoBehaviour
     public void StopTimer()
     {
         isRunning = false;
+    }
+
+    // -------------------------------------------------------
+    // MODIFICACIÓN DE TIEMPO EN VIVO
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Agrega tiempo extra al cronómetro (recompensa por atrapar archivos válidos).
+    /// El tiempo no puede superar el tiempo máximo original del nivel.
+    /// </summary>
+    public void AddTime(float seconds)
+    {
+        if (!isRunning) return;
+
+        timer += seconds;
+        // Limitar al tiempo máximo para evitar acumulación excesiva
+        timer = Mathf.Min(timer, maxTime);
+
+        // Disparar feedback de tiempo ganado en el HUD
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.TriggerTimerFeedback(true);
+        }
+    }
+
+    /// <summary>
+    /// Resta tiempo del cronómetro (penalización por virus/archivos corruptos).
+    /// Si el tiempo resultante es menor o igual a 0, se activa la expiración.
+    /// </summary>
+    public void SubtractTime(float seconds)
+    {
+        if (!isRunning) return;
+
+        timer -= seconds;
+
+        // Disparar feedback de tiempo perdido en el HUD
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.TriggerTimerFeedback(false);
+        }
+
+        if (timer <= 0f)
+        {
+            timer = 0f;
+            isRunning = false;
+            OnTimerExpired();
+        }
     }
 
     // -------------------------------------------------------

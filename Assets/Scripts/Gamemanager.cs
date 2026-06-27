@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     {
         if (Instance == null)
         {
+            transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
             Instance = this;
             DontDestroyOnLoad(gameObject); // Persiste entre escenas
         }

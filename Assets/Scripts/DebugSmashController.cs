@@ -1,177 +1,260 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// DebugSmashController — Controla el minijuego 3: "Debug Smash — Eliminar Bugs de la Pantalla".
 /// Nivel 3: Base de Datos Central.
-///
-/// Mecánica base (según reporte):
-/// - Bugs aparecen en posiciones aleatorias en pantalla.
-/// - El jugador hace clic sobre cada bug para eliminarlo.
-/// - Los bugs pueden desaparecer o multiplicarse si no se eliminan a tiempo.
-/// - Algunos bugs son más rápidos o más pequeños que otros.
-/// - La dificultad aumenta con la cantidad de bugs simultáneos y velocidad de aparición.
-/// - PENDIENTE: Oscar define los tipos de bug (normal, especial) y sus comportamientos exactos.
 /// </summary>
 public class DebugSmashController : MonoBehaviour
 {
-    // -------------------------------------------------------
-    // VARIABLES DE ESTADO
-    // -------------------------------------------------------
+    [Header("Configuración de Infección")]
+    [SerializeField] private float gameDuration = 30f; // Tiempo límite en segundos para sobrevivir
+    [SerializeField] private float maxInfection = 100f;
+    [SerializeField] private float infectionRatePerBug = 1.5f; // Infección reducida
+    [SerializeField] private float healPerBugKill = 15f; // Curación al matar bug (súper fácil)
+    
+    [Header("Referencias UI y Efectos")]
+    [SerializeField] private Slider infectionBar; // Barra de progreso de infección
+    [SerializeField] private Level3Effects levelEffects;
+
+    private float currentInfection = 0f;
     private bool isMinigameActive = false;
+    private BugSpawner spawner;
 
-    // Progreso del minijuego
-    // private int bugsDestroyed = 0;
-    // private int bugsRequired; // PENDIENTE: Oscar define cuántos bugs hay que eliminar
+    // Temporizador interno (respaldo si no existe TimerController en escena)
+    private float internalTimer = 0f;
+    private bool usingInternalTimer = false;
 
-    // Control de bugs activos en pantalla
-    // private List<GameObject> activeBugs = new List<GameObject>();
-    // private int maxBugsOnScreen; // PENDIENTE: definir límite máximo simultáneo
+    private void Awake()
+    {
+        spawner = GetComponent<BugSpawner>();
+        Debug.Log("[DSC] Awake - spawner: " + (spawner != null ? "OK" : "NULL"));
+        if (levelEffects == null) levelEffects = FindObjectOfType<Level3Effects>();
+        Debug.Log("[DSC] Awake - levelEffects: " + (levelEffects != null ? "OK" : "NULL"));
+        GenerateUI();
+    }
 
-    // Dificultad progresiva
-    // private float spawnInterval;      // Tiempo entre aparición de bugs
-    // private float bugLifetime;        // Tiempo antes de que un bug desaparezca o se multiplique
-    // PENDIENTE: definir valores y curva de escalado con el equipo
+    private void GenerateUI()
+    {
+        if (infectionBar != null) return;
+        
+        GameObject canvasObj = new GameObject("InfectionCanvas");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100;
+        canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>().uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        canvasObj.GetComponent<UnityEngine.UI.CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
+        
+        GameObject sliderObj = new GameObject("InfectionSlider");
+        sliderObj.transform.SetParent(canvasObj.transform, false);
+        infectionBar = sliderObj.AddComponent<Slider>();
+        RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
+        sliderRect.anchorMin = new Vector2(0.5f, 1f); sliderRect.anchorMax = new Vector2(0.5f, 1f);
+        sliderRect.pivot = new Vector2(0.5f, 1f); sliderRect.anchoredPosition = new Vector2(0, -60);
+        sliderRect.sizeDelta = new Vector2(800, 40);
 
-    // -------------------------------------------------------
-    // INICIO DEL MINIJUEGO
-    // -------------------------------------------------------
+        GameObject bgObj = new GameObject("Background");
+        bgObj.transform.SetParent(sliderObj.transform, false);
+        Image bgImage = bgObj.AddComponent<Image>();
+        bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+        RectTransform bgRect = bgObj.GetComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero; bgRect.anchorMax = Vector2.one; bgRect.sizeDelta = Vector2.zero;
 
-    /// <summary>
-    /// Inicializa el minijuego. Llamar desde GameManager al cargar el Nivel 3.
-    /// </summary>
+        GameObject fillAreaObj = new GameObject("Fill Area");
+        fillAreaObj.transform.SetParent(sliderObj.transform, false);
+        RectTransform fillAreaRect = fillAreaObj.AddComponent<RectTransform>();
+        fillAreaRect.anchorMin = new Vector2(0, 0.25f); fillAreaRect.anchorMax = new Vector2(1, 0.75f);
+        fillAreaRect.sizeDelta = new Vector2(-10, 0);
+
+        GameObject fillObj = new GameObject("Fill");
+        fillObj.transform.SetParent(fillAreaObj.transform, false);
+        Image fillImage = fillObj.AddComponent<Image>();
+        fillImage.color = Color.red;
+        RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+        fillRect.sizeDelta = Vector2.zero;
+
+        infectionBar.fillRect = fillRect;
+        infectionBar.interactable = false;
+        infectionBar.transition = Selectable.Transition.None;
+        infectionBar.value = 0f;
+    }
+
+    private void Update()
+    {
+        if (!isMinigameActive) return;
+
+        // Temporizador interno si no hay TimerController
+        if (usingInternalTimer)
+        {
+            internalTimer -= Time.deltaTime;
+            if (internalTimer <= 0f)
+            {
+                internalTimer = 0f;
+                usingInternalTimer = false;
+                Debug.Log("[DSC] Temporizador interno expiró. Llamando OnTimerExpired().");
+                OnTimerExpired();
+                return;
+            }
+        }
+
+        DetectClick();
+        UpdateInfection();
+    }
+
     public void StartMinigame()
     {
+        Debug.Log("[DSC] StartMinigame() LLAMADO - isMinigameActive antes: " + isMinigameActive);
         isMinigameActive = true;
-        // bugsDestroyed = 0;
+        currentInfection = 0f;
+        UpdateInfectionUI();
 
-        // PENDIENTE: iniciar spawner de bugs
-        // PENDIENTE: definir área de aparición (coordenadas del Tilemap Nivel 3)
-        // TimerController.Instance.StartTimer(tiempoDefinidoPorEquipo);
-        // UIManager.Instance.ShowMinigameInstruction("¡Elimina todos los bugs antes de que se multipliquen!");
+        if (AudioManager.Instance != null && AudioManager.Instance.level3Theme != null)
+        {
+            AudioManager.Instance.PlayMusic(AudioManager.Instance.level3Theme);
+            Debug.Log("[DSC] Musica iniciada.");
+        }
+        else
+        {
+            Debug.LogWarning("[DSC] AudioManager o level3Theme es NULL, no se puede reproducir musica.");
+        }
+
+        if (spawner != null) spawner.StartSpawning();
+        else Debug.LogWarning("[DSC] spawner es NULL, no se pueden generar bugs.");
+
+        if (TimerController.Instance != null)
+        {
+            Debug.Log("[DSC] Usando TimerController. Duracion: " + gameDuration);
+            usingInternalTimer = false;
+            TimerController.Instance.onTimerExpiredCallback = OnTimerExpired;
+            TimerController.Instance.StartTimer(gameDuration);
+        }
+        else
+        {
+            Debug.LogWarning("[DSC] TimerController no encontrado. Usando temporizador INTERNO de " + gameDuration + " segundos.");
+            usingInternalTimer = true;
+            internalTimer = gameDuration;
+        }
+
+        if (UIManager.Instance != null) UIManager.Instance.ShowMinigameInstruction("¡Elimina los bugs para que la infección no llegue al 100%!");
     }
 
-    // -------------------------------------------------------
-    // SPAWNER DE BUGS
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Genera bugs en posiciones aleatorias dentro del área de juego.
-    /// PENDIENTE: Oscar define los tipos de bug y sus propiedades (tamaño, velocidad, comportamiento).
-    /// PENDIENTE: definir si el spawner es un script separado (BugSpawner.cs).
-    /// </summary>
-    private void SpawnBug()
-    {
-        // Elegir tipo de bug aleatoriamente (normal o especial)
-        // Instanciar prefab en posición aleatoria dentro del área definida en el Tilemap
-        // PENDIENTE: los prefabs de bug los define Oscar en Assets/Art/Enemies
-    }
-
-    // -------------------------------------------------------
-    // DETECCIÓN DE CLIC SOBRE UN BUG
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Detecta el clic del jugador sobre un bug y lo elimina.
-    /// PENDIENTE: definir si la detección es por Raycast desde la cámara o por OnMouseDown en cada bug.
-    /// Se recomienda un script individual por bug (BugController.cs) que maneje su propio clic.
-    /// </summary>
     private void DetectClick()
     {
-        // if (Input.GetMouseButtonDown(0))
-        // {
-        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //     RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-        //     if (hit.collider != null && hit.collider.CompareTag("Bug"))
-        //     {
-        //         OnBugClicked(hit.collider.gameObject);
-        //     }
-        // }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+            if (hit.collider != null)
+            {
+                BugHealth bugHealth = hit.collider.GetComponent<BugHealth>();
+                if (bugHealth != null)
+                {
+                    bugHealth.TakeDamage(1);
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Click");
+                }
+            }
+        }
     }
 
-    /// <summary>
-    /// Se ejecuta al hacer clic exitosamente sobre un bug.
-    /// </summary>
-    private void OnBugClicked(GameObject bug)
+    private void UpdateInfection()
     {
-        // bugsDestroyed++;
-        // AudioManager.Instance.PlaySFX(sfxBugDestroyed);
-        // activeBugs.Remove(bug);
-        // Destroy(bug);
-        // CheckMinigameComplete();
+        if (spawner == null) return;
+        
+        int activeBugs = spawner.GetActiveBugs().Count;
+        if (activeBugs > 0)
+        {
+            currentInfection += activeBugs * infectionRatePerBug * Time.deltaTime;
+            currentInfection = Mathf.Clamp(currentInfection, 0, maxInfection);
+            
+            UpdateInfectionUI();
 
-        // PENDIENTE: ¿hay feedback visual al eliminar un bug (explosión, partículas)?
+            if (levelEffects != null)
+            {
+                levelEffects.UpdateVirusOverlay(currentInfection / maxInfection);
+                
+                // Screen shake constante y suave si la infección supera el 80% (Peligro crítico)
+                if (currentInfection >= maxInfection * 0.8f)
+                {
+                    levelEffects.PlayScreenShake(0.05f, 0.1f);
+                }
+            }
+
+            if (currentInfection >= maxInfection)
+            {
+                EndMinigame(false); // Derrota por colapso del sistema
+            }
+        }
+        else if (currentInfection > 0)
+        {
+            // Opcional: reducir la infección lentamente si la pantalla está limpia
+            currentInfection -= infectionRatePerBug * Time.deltaTime;
+            currentInfection = Mathf.Max(0, currentInfection);
+            UpdateInfectionUI();
+            if (levelEffects != null) levelEffects.UpdateVirusOverlay(currentInfection / maxInfection);
+        }
     }
 
-    // -------------------------------------------------------
-    // COMPORTAMIENTO DE BUGS (tiempo de vida)
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Maneja lo que ocurre si un bug no es eliminado a tiempo.
-    /// PENDIENTE: Oscar define si el bug desaparece, se multiplica, o ambos según el tipo.
-    /// </summary>
-    private void OnBugExpired(GameObject bug)
+    private void UpdateInfectionUI()
     {
-        // Opción A: el bug desaparece (se escapó)
-        // activeBugs.Remove(bug);
-        // Destroy(bug);
-
-        // Opción B: el bug se multiplica (genera 1 o 2 bugs adicionales)
-        // SpawnBug();
-        // SpawnBug();
-
-        // PENDIENTE: decidir cuál aplica por tipo de bug con Oscar.
+        if (infectionBar != null)
+        {
+            infectionBar.value = currentInfection / maxInfection;
+        }
     }
 
-    // -------------------------------------------------------
-    // DIFICULTAD PROGRESIVA
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Aumenta la cantidad y velocidad de aparición de bugs con el tiempo.
-    /// PENDIENTE: definir la curva de escalado con el equipo.
-    /// </summary>
-    private void IncreaseDifficulty()
+    public void OnBugDestroyed(GameObject bug)
     {
-        // spawnInterval = Mathf.Max(spawnInterval - incremento, minSpawnInterval);
-        // maxBugsOnScreen++;
-        // PENDIENTE: ¿también se reduce el bugLifetime conforme avanza el tiempo?
+        if (!isMinigameActive) return;
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("BugDestroy");
+
+        // Curar el sistema
+        currentInfection -= healPerBugKill;
+        currentInfection = Mathf.Max(0, currentInfection);
+        UpdateInfectionUI();
+        if (levelEffects != null) levelEffects.UpdateVirusOverlay(currentInfection / maxInfection);
     }
 
-    // -------------------------------------------------------
-    // CONDICIÓN DE VICTORIA DEL MINIJUEGO
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Verifica si se cumplió la condición de victoria.
-    /// PENDIENTE: definir si se gana eliminando X bugs o sobreviviendo el tiempo completo.
-    /// </summary>
-    private void CheckMinigameComplete()
-    {
-        // if (bugsDestroyed >= bugsRequired)
-        // {
-        //     EndMinigame();
-        // }
-    }
-
-    private void EndMinigame()
+    private void EndMinigame(bool success)
     {
         isMinigameActive = false;
-        // TimerController.Instance.StopTimer();
-        // GameManager.Instance.OnLevelComplete();
+
+        if (spawner != null)
+        {
+            spawner.StopSpawning();
+            spawner.ClearActiveBugs();
+        }
+
+        if (TimerController.Instance != null)
+        {
+            TimerController.Instance.StopTimer();
+            TimerController.Instance.onTimerExpiredCallback = null;
+        }
+
+        if (AudioManager.Instance != null) AudioManager.Instance.StopMusic();
+
+        if (success)
+        {
+            Debug.Log("DebugSmash survived successfully!");
+            if (levelEffects != null) levelEffects.ShowVictoryBackground();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
+            if (GameManager.Instance != null) GameManager.Instance.OnLevelComplete();
+        }
+        else
+        {
+            Debug.Log("System collapse! Infection reached 100%.");
+            if (levelEffects != null) levelEffects.ShowFailBackground();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("GameOver");
+            if (LifeManager.Instance != null)
+            {
+                LifeManager.Instance.LoseLife(); 
+            }
+        }
     }
 
-    // -------------------------------------------------------
-    // CONDICIÓN DE DERROTA (Timer expirado)
-    // -------------------------------------------------------
-
-    /// <summary>
-    /// Llamar desde TimerController cuando el tiempo llega a 0.
-    /// PENDIENTE: igual que en FileCatcher, depende de si la victoria es por cantidad o por tiempo.
-    /// </summary>
     public void OnTimerExpired()
     {
-        isMinigameActive = false;
-        // LifeManager.Instance.LoseLife();
+        Debug.Log("[DSC] OnTimerExpired() disparado! isMinigameActive: " + isMinigameActive);
+        if (!isMinigameActive) return;
+        EndMinigame(true); // Victoria al sobrevivir el tiempo
     }
 }

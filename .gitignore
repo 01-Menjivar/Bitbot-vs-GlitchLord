@@ -44,6 +44,7 @@ Thumbs.db
 # Unity package manager overrides
 /Packages/manifest.json.user
 /Packages/packages-lock.json
+/Packages/com.unity.ai.assistant
 
 # Builds
 *.apk

@@ -16,6 +16,7 @@ public class AudioManager : MonoBehaviour
     {
         if (Instance == null)
         {
+            transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -32,18 +33,19 @@ public class AudioManager : MonoBehaviour
     private AudioSource sfxSource;   // Para efectos de sonido (SFX)
 
     [Header("Música de Fondo (BGM)")]
-    [SerializeField] private AudioClip menuTheme;
-    [SerializeField] private AudioClip level1Theme; // Red de Datos (File Catcher)
-    [SerializeField] private AudioClip level2Theme; // Base de Datos Central (Debug Smash)
+    [SerializeField] public AudioClip menuTheme;
+    [SerializeField] public AudioClip level1Theme; // Red de Datos (File Catcher)
+    [SerializeField] public AudioClip level2Theme; // Base de Datos Central (Debug Smash)
+    [SerializeField] public AudioClip level3Theme; 
 
     [Header("Efectos de Sonido (SFX)")]
-    [SerializeField] private AudioClip sfxClick;
-    [SerializeField] private AudioClip sfxError;
-    [SerializeField] private AudioClip sfxFileCaught;
-    [SerializeField] private AudioClip sfxVirusHit;
-    [SerializeField] private AudioClip sfxBugDestroyed;
-    [SerializeField] private AudioClip sfxVictory;
-    [SerializeField] private AudioClip sfxGameOver;
+    [SerializeField] public AudioClip sfxClick;
+    [SerializeField] public AudioClip sfxError;
+    [SerializeField] public AudioClip sfxFileCaught;
+    [SerializeField] public AudioClip sfxVirusHit;
+    [SerializeField] public AudioClip sfxBugDestroyed;
+    [SerializeField] public AudioClip sfxVictory;
+    [SerializeField] public AudioClip sfxGameOver;
 
     private void Start()
     {
@@ -89,6 +91,28 @@ public class AudioManager : MonoBehaviour
     {
         if (clip == null) return;
         sfxSource.PlayOneShot(clip);
+    }
+
+    /// <summary>
+    /// Reproduce un efecto de sonido por nombre.
+    /// </summary>
+    public void PlaySFX(string soundName)
+    {
+        AudioClip clipToPlay = null;
+        switch (soundName)
+        {
+            case "Click": clipToPlay = sfxClick; break;
+            case "Error": clipToPlay = sfxError; break;
+            case "FileCaught": clipToPlay = sfxFileCaught; break;
+            case "VirusHit": clipToPlay = sfxVirusHit; break;
+            case "BugDestroy": clipToPlay = sfxBugDestroyed; break;
+            case "Victory": clipToPlay = sfxVictory; break;
+            case "GameOver": clipToPlay = sfxGameOver; break;
+            case "BugSpawn": clipToPlay = sfxError; break; // Fallback
+        }
+
+        if (clipToPlay != null) sfxSource.PlayOneShot(clipToPlay);
+        else Debug.LogWarning("AudioManager: SFX no asignado en el Inspector para: " + soundName);
     }
 
     // PENDIENTE: ¿se necesita control de volumen separado para BGM y SFX?

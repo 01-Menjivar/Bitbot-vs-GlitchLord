@@ -1,2 +1,22 @@
 fileFormatVersion: 2
 guid: 4cd197b0d28a24db886bdc2c94dca07c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - menuTheme: {instanceID: 0}
+  - level1Theme: {instanceID: 0}
+  - level2Theme: {instanceID: 0}
+  - level3Theme: {fileID: 8300000, guid: 5cf2e8454cc9141ab892565a0e7c81b5, type: 3}
+  - sfxClick: {fileID: 8300000, guid: d0c9da9a956e4463b86c5c93c4c29fc2, type: 3}
+  - sfxError: {fileID: 8300000, guid: e1f9041205b9e4391b5c313444cf9d27, type: 3}
+  - sfxFileCaught: {instanceID: 0}
+  - sfxVirusHit: {fileID: 8300000, guid: b102d3072616f44dcaf0caa5b926a5c0, type: 3}
+  - sfxBugDestroyed: {fileID: 8300000, guid: b102d3072616f44dcaf0caa5b926a5c0, type: 3}
+  - sfxVictory: {fileID: 8300000, guid: 1e1e397804a8b49ccba646fa14e8b867, type: 3}
+  - sfxGameOver: {fileID: 8300000, guid: d7642b49b09364599a5a800899584961, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

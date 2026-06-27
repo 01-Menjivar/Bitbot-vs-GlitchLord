@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     {
         if (Instance == null)
         {
+            transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -35,9 +36,22 @@ public class UIManager : MonoBehaviour
 
     // HUD — Barra de tiempo
     [SerializeField] private Slider timerBar;
+    [SerializeField] private Text timerText;
+    [SerializeField] private Sprite barSpriteFull;
+    [SerializeField] private Sprite barSpriteWarning;
+    [SerializeField] private Sprite barSpriteCritical;
 
     // HUD — Iconos de vidas (núcleos de procesador)
     [SerializeField] private Image[] lifeIcons; // Array de 3 iconos
+    [SerializeField] private Sprite coreActiveSprite;
+    [SerializeField] private Sprite coreOfflineSprite;
+
+    // HUD — Puntuación (Score)
+    [Header("HUD — Score")]
+    [Tooltip("Imagen de marco del score (usa score.png como sprite)")]
+    [SerializeField] private Image scoreFrameImage;
+    [Tooltip("Texto numérico del puntaje dentro del marco")]
+    [SerializeField] private Text scoreText;
 
     // Pantallas
     [SerializeField] private GameObject victoryScreen;
@@ -50,14 +64,44 @@ public class UIManager : MonoBehaviour
     // -------------------------------------------------------
 
     /// <summary>
-    /// Actualiza la barra de progreso del cronómetro.
+    /// Actualiza la barra de progreso del cronómetro y el texto del tiempo.
     /// Llamar desde TimerController en cada frame.
     /// </summary>
     public void UpdateTimerBar(float currentTime, float maxTime)
     {
+        // 1. Actualizar barra de progreso si está configurada
         if (timerBar != null && maxTime > 0f)
         {
-            timerBar.value = currentTime / maxTime;
+            float fillRatio = currentTime / maxTime;
+            timerBar.value = fillRatio;
+
+            // Cambiar el sprite de relleno según el porcentaje de tiempo restante
+            if (timerBar.fillRect != null)
+            {
+                Image fillImage = timerBar.fillRect.GetComponent<Image>();
+                if (fillImage != null)
+                {
+                    if (fillRatio <= 0.25f && barSpriteCritical != null)
+                    {
+                        fillImage.sprite = barSpriteCritical;
+                    }
+                    else if (fillRatio <= 0.5f && barSpriteWarning != null)
+                    {
+                        fillImage.sprite = barSpriteWarning;
+                    }
+                    else if (barSpriteFull != null)
+                    {
+                        fillImage.sprite = barSpriteFull;
+                    }
+                }
+            }
+        }
+
+        // 2. Actualizar el cronómetro numérico (sobreescritura del HUD_Timer estático)
+        if (timerText != null)
+        {
+            int seconds = Mathf.Max(0, Mathf.CeilToInt(currentTime));
+            timerText.text = $"00:{seconds:D2}";
         }
     }
 
@@ -86,7 +130,30 @@ public class UIManager : MonoBehaviour
             {
                 if (lifeIcons[i] != null)
                 {
-                    lifeIcons[i].enabled = (i < currentLives);
+                    if (i < currentLives)
+                    {
+                        if (coreActiveSprite != null)
+                        {
+                            lifeIcons[i].sprite = coreActiveSprite;
+                            lifeIcons[i].enabled = true;
+                        }
+                        else
+                        {
+                            lifeIcons[i].enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        if (coreOfflineSprite != null)
+                        {
+                            lifeIcons[i].sprite = coreOfflineSprite;
+                            lifeIcons[i].enabled = true;
+                        }
+                        else
+                        {
+                            lifeIcons[i].enabled = false;
+                        }
+                    }
                 }
             }
         }
@@ -122,6 +189,22 @@ public class UIManager : MonoBehaviour
     }
 
     // -------------------------------------------------------
+    // HUD — PUNTUACIÓN (SCORE)
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Actualiza el texto del puntaje en el HUD.
+    /// Llamar desde ScoreManager cada vez que cambie la puntuación.
+    /// </summary>
+    public void UpdateScoreHUD(int score)
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = score.ToString("N0"); // Formato con separador de miles
+        }
+    }
+
+    // -------------------------------------------------------
     // INSTRUCCIONES DE MINIJUEGO
     // -------------------------------------------------------
 
@@ -134,5 +217,83 @@ public class UIManager : MonoBehaviour
         // instructionPanel.SetActive(true);
         // instructionText.text = instruction;
         // PENDIENTE: ¿cuántos segundos se muestra antes de iniciar el timer?
+    }
+
+    // -------------------------------------------------------
+    // FEEDBACK VISUAL DEL TEMPORIZADOR
+    // -------------------------------------------------------
+
+    [Header("Configuración de Feedback del Timer")]
+    [SerializeField] private Color timeGainedColor = new Color(0.2f, 1f, 0.4f);  // Verde neón
+    [SerializeField] private Color timeLostColor = new Color(1f, 0.2f, 0.2f);    // Rojo neón
+    [SerializeField] private float timerPulseDuration = 0.5f;
+    [SerializeField] private float timerPunchScale = 1.25f;
+
+    private Coroutine timerFeedbackCoroutine;
+    private Color originalTimerTextColor = Color.white;
+    private Vector3 originalTimerTextScale = Vector3.one;
+    private Text lastTimerText;
+
+    /// <summary>
+    /// Activa el feedback visual (color y escala) en el texto del temporizador.
+    /// </summary>
+    /// <param name="isPositive">true si se ganó tiempo, false si se perdió tiempo.</param>
+    public void TriggerTimerFeedback(bool isPositive)
+    {
+        if (timerText == null) return;
+
+        // Si el objeto Text ha cambiado o es el primero, guardamos sus valores originales
+        if (timerText != lastTimerText)
+        {
+            originalTimerTextColor = timerText.color;
+            originalTimerTextScale = timerText.transform.localScale;
+            lastTimerText = timerText;
+        }
+
+        if (timerFeedbackCoroutine != null)
+        {
+            StopCoroutine(timerFeedbackCoroutine);
+        }
+
+        timerFeedbackCoroutine = StartCoroutine(TimerFeedbackCoroutine(isPositive));
+    }
+
+    private System.Collections.IEnumerator TimerFeedbackCoroutine(bool isPositive)
+    {
+        Color flashColor = isPositive ? timeGainedColor : timeLostColor;
+        float elapsed = 0f;
+
+        // Establecer color de inicio de flash y escala original
+        timerText.color = flashColor;
+        timerText.transform.localScale = originalTimerTextScale;
+
+        while (elapsed < timerPulseDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / timerPulseDuration;
+
+            // Curva de escala tipo "punch" (crece rápido al inicio y regresa lento)
+            float scaleMultiplier = 1f;
+            if (t < 0.3f)
+            {
+                scaleMultiplier = Mathf.Lerp(1f, timerPunchScale, t / 0.3f);
+            }
+            else
+            {
+                scaleMultiplier = Mathf.Lerp(timerPunchScale, 1f, (t - 0.3f) / 0.7f);
+            }
+
+            timerText.transform.localScale = originalTimerTextScale * scaleMultiplier;
+
+            // Interpolación de color de regreso al color original
+            timerText.color = Color.Lerp(flashColor, originalTimerTextColor, t);
+
+            yield return null;
+        }
+
+        // Asegurar restablecimiento final
+        timerText.color = originalTimerTextColor;
+        timerText.transform.localScale = originalTimerTextScale;
+        timerFeedbackCoroutine = null;
     }
 }

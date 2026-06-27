@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "unity-bridge": {
+      "command": "node",
+      "args": [
+        "../path-to-your-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "UNITY_PROJECT_PATH": "/Users/andreetorres/Desktop/Bitbot-vs-GlitchLord"
+      },
+      "disabled": false
+    }
+  }
+}
