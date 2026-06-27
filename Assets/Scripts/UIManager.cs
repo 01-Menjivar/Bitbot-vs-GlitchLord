@@ -27,6 +27,50 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (scene.name == "Level2" || scene.name == "Level3")
+        {
+            RebindHUDReferences();
+        }
+    }
+
+    public void RebindHUDReferences()
+    {
+        Debug.Log("[UIManager] Re-vinculando referencias del HUD para la escena activa...");
+        
+        // Buscar la barra de tiempo
+        GameObject timerBarObj = GameObject.Find("HUD_Timer");
+        if (timerBarObj != null)
+        {
+            timerBar = timerBarObj.GetComponent<Slider>();
+        }
+
+        // Buscar el texto del cronómetro
+        GameObject timerTextObj = GameObject.Find("TimerText");
+        if (timerTextObj != null)
+        {
+            timerText = timerTextObj.GetComponent<Text>();
+        }
+
+        // Buscar el texto de la puntuación
+        GameObject scoreTextObj = GameObject.Find("ScoreText");
+        if (scoreTextObj != null)
+        {
+            scoreText = scoreTextObj.GetComponent<Text>();
+        }
+    }
+
     // -------------------------------------------------------
     // REFERENCIAS DE UI
     // -------------------------------------------------------

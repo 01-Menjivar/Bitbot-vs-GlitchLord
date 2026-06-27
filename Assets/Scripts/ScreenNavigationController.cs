@@ -28,6 +28,8 @@ public class ScreenNavigationController : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private string lastActiveScene = "Level2";
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "GameOverScreen")
@@ -37,6 +39,10 @@ public class ScreenNavigationController : MonoBehaviour
         else if (scene.name == "VictoryScreen")
         {
             SetupVictoryScene();
+        }
+        else if (scene.name == "Level2" || scene.name == "Level3")
+        {
+            lastActiveScene = scene.name;
         }
     }
 
@@ -62,7 +68,7 @@ public class ScreenNavigationController : MonoBehaviour
             }
             else
             {
-                SceneManager.LoadScene("Level2");
+                SceneManager.LoadScene(lastActiveScene);
             }
         });
 

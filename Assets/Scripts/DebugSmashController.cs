@@ -235,41 +235,35 @@ public class DebugSmashController : MonoBehaviour
         if (success)
         {
             Debug.Log("DebugSmash survived successfully!");
-            StartCoroutine(VictoryDelayRoutine());
+            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
+            
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnLevelComplete();
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("VictoryScreen");
+            }
         }
         else
         {
             Debug.Log("System collapse! Infection reached 100%.");
-            if (levelEffects != null) levelEffects.ShowFailBackground();
             if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("GameOver");
             if (LifeManager.Instance != null)
             {
                 LifeManager.Instance.LoseLife(); 
                 if (LifeManager.Instance.GetLives() > 0)
                 {
-                    StartCoroutine(DefeatRetryDelayRoutine());
+                    if (GameManager.Instance != null) GameManager.Instance.TriggerGameOver();
+                    else UnityEngine.SceneManagement.SceneManager.LoadScene("GameOverScreen");
                 }
             }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("GameOverScreen");
+            }
         }
-    }
-
-    private System.Collections.IEnumerator VictoryDelayRoutine()
-    {
-        if (levelEffects != null) levelEffects.ShowVictoryBackground();
-        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
-        
-        yield return new WaitForSeconds(2.0f);
-        
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnLevelComplete();
-        }
-    }
-
-    private System.Collections.IEnumerator DefeatRetryDelayRoutine()
-    {
-        yield return new WaitForSeconds(2.0f);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
     public void OnTimerExpired()

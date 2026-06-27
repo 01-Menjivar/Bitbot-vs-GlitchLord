@@ -32,25 +32,17 @@ public class GameManager : MonoBehaviour
     // -------------------------------------------------------
     private int currentLevel = 1;
     private const int TOTAL_LEVELS = 2; // Nivel 1: File Catcher (Level2), Nivel 2: Debug Smash (Level3)
+    private string failedSceneName = "Level2";
 
     // -------------------------------------------------------
     // FLUJO DE NIVELES
     // -------------------------------------------------------
 
-    /// <summary>
-    /// Llamar cuando el jugador completa exitosamente un minijuego.
-    /// </summary>
     public void OnLevelComplete()
     {
-        if (currentLevel < TOTAL_LEVELS)
-        {
-            currentLevel++;
-            LoadNextLevel();
-        }
-        else
-        {
-            TriggerVictory();
-        }
+        // Al completar con éxito cualquiera de los minijuegos, cargamos la pantalla de victoria
+        // para permitir volver al menú principal/selección de niveles.
+        TriggerVictory();
     }
 
     /// <summary>
@@ -79,34 +71,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void TriggerGameOver()
     {
-        StartCoroutine(GameOverRoutine());
-    }
-
-    private System.Collections.IEnumerator GameOverRoutine()
-    {
-        // 1. Mostrar pantalla azul del HUD en el UIManager si está asignada
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.ShowBSOD();
-        }
-
-        // 2. Activar el fondo local de derrota en la escena si existe
-        GameObject failBg = GameObject.Find("FailBackground");
-        if (failBg == null) failBg = GameObject.Find("level 2 fail");
-        if (failBg != null)
-        {
-            failBg.SetActive(true);
-            SpriteRenderer sr = failBg.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sortingOrder = 100; // Asegurar que esté al frente
-            }
-        }
-
-        // 3. Esperar 2 segundos para dar retroalimentación al jugador
-        yield return new WaitForSeconds(2.0f);
-
-        // 4. Cargar la escena de GameOver
+        failedSceneName = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene("GameOverScreen");
     }
 
@@ -116,13 +81,24 @@ public class GameManager : MonoBehaviour
     
     public int GetCurrentLevel() => currentLevel;
 
-    /// <summary>
-    /// Reinicia la partida desde el primer nivel jugable (Level2) con vidas completas.
-    /// </summary>
     public void RestartGame()
     {
-        ResetGame();
-        SceneManager.LoadScene("Level2");
+        if (LifeManager.Instance != null)
+        {
+            LifeManager.Instance.ResetLives();
+        }
+
+        // Ajustar el nivel lógico según la escena que estamos reintentando
+        if (failedSceneName == "Level3")
+        {
+            currentLevel = 2;
+        }
+        else
+        {
+            currentLevel = 1;
+        }
+
+        SceneManager.LoadScene(failedSceneName);
     }
 
     /// <summary>
