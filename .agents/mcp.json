@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "command": "node",
+      "args": [
+        "/Users/elsen0rdelanoche/Documents/Bitbot-vs-GlitchLord/Library/PackageCache/com.gamelovers.mcp-unity@c523d75b086d/Server~/build/index.js"
+      ]
+    }
+  }
+}

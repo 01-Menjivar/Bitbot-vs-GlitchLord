@@ -37,6 +37,7 @@ public class BugHealth : MonoBehaviour
             if (effects != null)
             {
                 effects.PlayDamageEffect(gameObject);
+                if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("VirusHit");
             }
         }
     }

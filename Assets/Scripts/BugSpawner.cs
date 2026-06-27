@@ -24,8 +24,8 @@ public class BugSpawner : MonoBehaviour
     [Header("Escalado de Dificultad")]
     [SerializeField] private float minSpawnInterval = 0.6f;
     [SerializeField] private float spawnIntervalDecay = 0.04f; // Reducción de intervalo por segundo
-    [SerializeField] private float speedIncreaseFactor = 0.03f; // +3% velocidad por segundo
-    [SerializeField] private float hpIncreaseInterval = 10.0f; // Cada 10 segundos aumenta +1 HP
+    [SerializeField] private float speedIncreaseFactor = 0.01f; // +1% velocidad por segundo
+    [SerializeField] private float hpIncreaseInterval = 999.0f; // Desactivado
 
     private Coroutine spawnCoroutine;
     private List<GameObject> activeBugs = new List<GameObject>();
@@ -177,6 +177,13 @@ public class BugSpawner : MonoBehaviour
 
         GameObject spawnedBug = Instantiate(selectedPrefab, spawnPos, Quaternion.identity);
         
+        // Hacer los bugs más grandes (reducción de dificultad extrema)
+        spawnedBug.transform.localScale = new Vector3(
+            spawnedBug.transform.localScale.x * 2.5f,
+            spawnedBug.transform.localScale.y * 2.5f,
+            spawnedBug.transform.localScale.z
+        );
+
         // Garantizar que se dibuje por encima del monitor (que tiene sortingOrder = 5)
         SpriteRenderer bugSR = spawnedBug.GetComponent<SpriteRenderer>();
         if (bugSR != null)

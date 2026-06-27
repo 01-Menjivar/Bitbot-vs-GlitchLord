@@ -160,14 +160,22 @@ public class MonitorIntroAnimation : MonoBehaviour
         }
 
         // Disparar el inicio del juego en el DebugSmashController
+        // Buscar en el padre, en el mismo objeto, y en toda la escena (en ese orden)
         DebugSmashController controller = GetComponentInParent<DebugSmashController>();
+        Debug.Log("[MIA] Buscando DebugSmashController en padre: " + (controller != null ? "ENCONTRADO" : "NO encontrado"));
+        if (controller == null) controller = GetComponent<DebugSmashController>();
+        Debug.Log("[MIA] Buscando DebugSmashController en si mismo: " + (controller != null ? "ENCONTRADO" : "NO encontrado"));
+        if (controller == null) controller = FindObjectOfType<DebugSmashController>();
+        Debug.Log("[MIA] Buscando DebugSmashController en escena: " + (controller != null ? "ENCONTRADO" : "NO encontrado"));
+
         if (controller != null)
         {
+            Debug.Log("[MIA] Llamando StartMinigame()!");
             controller.StartMinigame();
         }
         else
         {
-            Debug.LogWarning("MonitorIntroAnimation: No se encontró DebugSmashController en los padres. El minijuego no se inició automáticamente.");
+            Debug.LogWarning("[MIA] No se encontró DebugSmashController en ninguna parte. El minijuego no se inició automáticamente.");
         }
     }
 

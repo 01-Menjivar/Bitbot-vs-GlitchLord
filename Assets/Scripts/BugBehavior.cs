@@ -8,6 +8,14 @@ public class BugBehavior : MonoBehaviour
     [Header("Configuración de Movimiento")]
     [SerializeField] private float speed = 2.0f;
 
+    [Header("Configuración de Multiplicación")]
+    [SerializeField] private bool canMultiply = true; // Permite a los bugs dividirse
+    [SerializeField] private float minMultiplyTime = 12f;
+    [SerializeField] private float maxMultiplyTime = 20f;
+    
+    private float multiplyTimer;
+    private BugSpawner spawner;
+
     private Vector2 direction;
     private float minX;
     private float maxX;
@@ -26,6 +34,12 @@ public class BugBehavior : MonoBehaviour
         // Elegir una dirección inicial aleatoria (360 grados)
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)).normalized;
+
+        if (canMultiply)
+        {
+            multiplyTimer = Random.Range(minMultiplyTime, maxMultiplyTime);
+            spawner = FindObjectOfType<BugSpawner>();
+        }
 
         UpdateSpriteFlipping();
     }
@@ -58,6 +72,8 @@ public class BugBehavior : MonoBehaviour
     private void Update()
     {
         if (!isInitialized) return;
+
+        HandleMultiplication();
 
         // Calcular nueva posición propuesta
         Vector3 newPosition = transform.position + (Vector3)(direction * speed * Time.deltaTime);
@@ -99,6 +115,24 @@ public class BugBehavior : MonoBehaviour
 
         // Aplicar posición actualizada
         transform.position = newPosition;
+    }
+
+    private void HandleMultiplication()
+    {
+        if (canMultiply && spawner != null)
+        {
+            multiplyTimer -= Time.deltaTime;
+            if (multiplyTimer <= 0f)
+            {
+                // Multiplicarse solo si no hay demasiados bugs en pantalla (límite de 30 para evitar problemas de rendimiento/saturación inmanejable)
+                if (spawner.GetActiveBugs().Count < 30)
+                {
+                    spawner.SpawnBug();
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("BugSpawn");
+                }
+                multiplyTimer = Random.Range(minMultiplyTime, maxMultiplyTime);
+            }
+        }
     }
 
     private void UpdateSpriteFlipping()

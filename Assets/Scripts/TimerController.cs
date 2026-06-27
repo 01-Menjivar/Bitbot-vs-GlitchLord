@@ -31,6 +31,8 @@ public class TimerController : MonoBehaviour
     private float maxTime;         // Tiempo inicial del minijuego
     private bool isRunning = false;
 
+    public System.Action onTimerExpiredCallback; // Callback para personalizar qué pasa al terminar el tiempo
+
     // PENDIENTE: definir los tiempos por nivel con el equipo
     // Ejemplo orientativo:
     // Nivel 1 (Reconnect)   → 30 segundos
@@ -80,8 +82,15 @@ public class TimerController : MonoBehaviour
     /// </summary>
     private void OnTimerExpired()
     {
-        if (LifeManager.Instance != null)
+        Debug.Log("[TC] OnTimerExpired - callback asignado: " + (onTimerExpiredCallback != null));
+        if (onTimerExpiredCallback != null)
         {
+            Debug.Log("[TC] Ejecutando callback personalizado (VICTORIA).");
+            onTimerExpiredCallback.Invoke();
+        }
+        else if (LifeManager.Instance != null)
+        {
+            Debug.Log("[TC] Sin callback. Llamando LoseLife().");
             LifeManager.Instance.LoseLife();
         }
     }

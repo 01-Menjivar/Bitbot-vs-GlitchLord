@@ -171,15 +171,79 @@ public class Level3Builder : EditorWindow
         // Crear el borde negro para el texto del contador
         CreateTextOutline(countdownTextObj, countdownMesh, pressStartFont);
 
-        // 8. Guardar la escena en Assets/Scenes/
+        // 8. Crear Virus Overlay
+        GameObject overlayObj = new GameObject("VirusOverlay");
+        overlayObj.transform.SetParent(rootObj.transform);
+        overlayObj.transform.position = new Vector3(0, 0, -8f); // Delante de todo
+        SpriteRenderer overlayRenderer = overlayObj.AddComponent<SpriteRenderer>();
+        overlayRenderer.sprite = Level3Effects.GetOrCreatePixelSprite(); // Reutilizar pixel
+        overlayRenderer.color = new Color(1f, 0f, 0f, 0f); // Rojo transparente
+        overlayObj.transform.localScale = new Vector3(30f, 30f, 1f); // Suficiente para cubrir pantalla
+        overlayRenderer.sortingOrder = 20; // Capa máxima
+        
+        Level3Effects effects = rootObj.GetComponent<Level3Effects>();
+        SerializedObject effectsSo = new SerializedObject(effects);
+        effectsSo.FindProperty("virusOverlay").objectReferenceValue = overlayRenderer;
+        effectsSo.ApplyModifiedProperties();
+        
+        // 9. Crear Canvas e Infection Bar
+        GameObject canvasObj = new GameObject("Canvas");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>().uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        canvasObj.GetComponent<UnityEngine.UI.CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
+        canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+        GameObject sliderObj = new GameObject("InfectionSlider");
+        sliderObj.transform.SetParent(canvasObj.transform, false);
+        UnityEngine.UI.Slider slider = sliderObj.AddComponent<UnityEngine.UI.Slider>();
+        RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
+        sliderRect.anchorMin = new Vector2(0.5f, 1f);
+        sliderRect.anchorMax = new Vector2(0.5f, 1f);
+        sliderRect.pivot = new Vector2(0.5f, 1f);
+        sliderRect.anchoredPosition = new Vector2(0, -60);
+        sliderRect.sizeDelta = new Vector2(800, 40);
+
+        GameObject bgSliderObj = new GameObject("Background");
+        bgSliderObj.transform.SetParent(sliderObj.transform, false);
+        UnityEngine.UI.Image bgImage = bgSliderObj.AddComponent<UnityEngine.UI.Image>();
+        bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+        RectTransform bgRect = bgSliderObj.GetComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.sizeDelta = Vector2.zero;
+
+        GameObject fillAreaObj = new GameObject("Fill Area");
+        fillAreaObj.transform.SetParent(sliderObj.transform, false);
+        RectTransform fillAreaRect = fillAreaObj.AddComponent<RectTransform>();
+        fillAreaRect.anchorMin = new Vector2(0, 0.25f);
+        fillAreaRect.anchorMax = new Vector2(1, 0.75f);
+        fillAreaRect.sizeDelta = new Vector2(-10, 0);
+
+        GameObject fillObj = new GameObject("Fill");
+        fillObj.transform.SetParent(fillAreaObj.transform, false);
+        UnityEngine.UI.Image fillImage = fillObj.AddComponent<UnityEngine.UI.Image>();
+        fillImage.color = Color.red;
+        RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+        fillRect.sizeDelta = Vector2.zero;
+
+        slider.fillRect = fillRect;
+        slider.value = 0f;
+        slider.interactable = false;
+        slider.transition = UnityEngine.UI.Selectable.Transition.None;
+
+        DebugSmashController controller = rootObj.GetComponent<DebugSmashController>();
+        SerializedObject controllerSo = new SerializedObject(controller);
+        controllerSo.FindProperty("infectionBar").objectReferenceValue = slider;
+        controllerSo.ApplyModifiedProperties();
+
+        // 10. Guardar la escena en Assets/Scenes/
         string scenePath = "Assets/Scenes/Level3.unity";
         bool saveSuccess = EditorSceneManager.SaveScene(newScene, scenePath);
 
         if (saveSuccess)
         {
-            // 8. Registrar la escena en Build Settings
             RegisterSceneInBuildSettings(scenePath);
-
             Debug.Log("Escena Level3 creada y guardada con éxito en: " + scenePath);
         }
         else
