@@ -108,6 +108,10 @@ public class DebugSmashController : MonoBehaviour
         currentInfection = 0f;
         UpdateInfectionUI();
 
+        // Mostrar el botón de pausa únicamente ahora que el juego ha empezado
+        PauseController pc = FindObjectOfType<PauseController>();
+        if (pc != null) pc.ShowPauseButton();
+
         if (AudioManager.Instance != null && AudioManager.Instance.level3Theme != null)
         {
             AudioManager.Instance.PlayMusic(AudioManager.Instance.level3Theme);

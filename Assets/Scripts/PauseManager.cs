@@ -52,7 +52,8 @@ public class PauseManager : MonoBehaviour
         pausePanelObj = null;
 
         // Activar la bandera de creación si entramos a un nivel jugable
-        if (scene.name == "Level2" || scene.name == "Level3")
+        // Se excluye Level3 porque ahora cuenta con su propia interfaz de pausa narrativa
+        if (scene.name == "Level2")
         {
             Debug.Log($"[PauseManager] Escena jugable detectada: {scene.name}. Planificando creación de botón de pausa.");
             shouldCreatePauseButton = true;
@@ -67,7 +68,7 @@ public class PauseManager : MonoBehaviour
     {
         // Solo permitir pausar/crear si estamos en una escena jugable válida
         string currentScene = SceneManager.GetActiveScene().name;
-        if (currentScene != "Level2" && currentScene != "SceneSelection" && currentScene != "Level3") return;
+        if (currentScene != "Level2" && currentScene != "SceneSelection") return;
 
         // Garantizar que exista un EventSystem en la escena para que la UI responda a los clics del mouse
         EnsureEventSystem();
@@ -176,7 +177,7 @@ public class PauseManager : MonoBehaviour
     {
         // Solo permitir pausar en las escenas jugables
         string currentScene = SceneManager.GetActiveScene().name;
-        if (currentScene != "Level2" && currentScene != "Level3") return;
+        if (currentScene != "Level2") return;
 
         isPaused = !isPaused;
 
