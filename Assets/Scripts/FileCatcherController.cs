@@ -33,8 +33,8 @@ public class FileCatcherController : MonoBehaviour
 
     private void Start()
     {
-        // Iniciar automáticamente el minijuego para pruebas y al cargar la escena
-        StartMinigame();
+        // El minijuego ahora inicia a través de la pantalla de introducción (IntroCanvas).
+        // No iniciar automáticamente aquí.
     }
 
     /// <summary>
@@ -85,6 +85,10 @@ public class FileCatcherController : MonoBehaviour
         {
             ScoreManager.Instance.ResetScore();
         }
+
+        // 6. Habilitar y mostrar el botón de pausa
+        PauseController pc = FindObjectOfType<PauseController>();
+        if (pc != null) pc.ShowPauseButton();
 
         Debug.Log("[FileCatcherController] Minijuego File Catcher iniciado.");
     }
