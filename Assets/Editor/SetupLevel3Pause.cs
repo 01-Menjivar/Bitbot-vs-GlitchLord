@@ -17,6 +17,7 @@ public class SetupLevel3Pause : MonoBehaviour
         EnsureSprite("Assets/Art/Characters/Bit-Bot/bit-bot_fronta.png");
         EnsureSprite("Assets/Art/UI/Buttons/button_resume.png");
         EnsureSprite("Assets/Art/UI/HUD/HUD_Mensaje.png");
+        EnsureSprite("Assets/Resources/UI/Buttons/Button_Exit.png");
 
         GameObject oldCanvas = GameObject.Find("PauseCanvas");
         if (oldCanvas != null) DestroyImmediate(oldCanvas);
@@ -142,19 +143,45 @@ public class SetupLevel3Pause : MonoBehaviour
         {
             resImg.sprite = resSprite;
             resImg.SetNativeSize();
-            resumeBtnObj.transform.localScale = new Vector3(0.75f, 0.75f, 1f); // 25% mas grande que antes (era 0.6)
+            // Acción principal equilibrada: Destacada pero no exagerada
+            resumeBtnObj.transform.localScale = new Vector3(0.95f, 0.95f, 1f); 
         }
         Button resBtn = resumeBtnObj.AddComponent<Button>();
         RectTransform resRect = resumeBtnObj.GetComponent<RectTransform>();
-        // Subir considerablemente el boton para que no se mezcle con la mesa (de 0.15 a 0.25)
-        resRect.anchorMin = new Vector2(0.5f, 0.25f);
-        resRect.anchorMax = new Vector2(0.5f, 0.25f);
+        // Centrar de forma más prominente en la zona inferior
+        resRect.anchorMin = new Vector2(0.5f, 0.38f);
+        resRect.anchorMax = new Vector2(0.5f, 0.38f);
         resRect.pivot = new Vector2(0.5f, 0.5f);
+
+        // 9. Botón de Salir (Exit)
+        GameObject exitBtnObj = new GameObject("ExitButton");
+        exitBtnObj.transform.SetParent(pausePanelObj.transform, false);
+        Image exitImg = exitBtnObj.AddComponent<Image>();
+        Sprite exitSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Resources/UI/Buttons/Button_Exit.png");
+        if (exitSprite != null)
+        {
+            exitImg.sprite = exitSprite;
+            exitImg.SetNativeSize();
+            // Acción secundaria equilibrada: Legible pero discreta
+            exitBtnObj.transform.localScale = new Vector3(0.45f, 0.45f, 1f); 
+        }
+        else 
+        {
+            exitImg.color = Color.red; // Fallback visual
+            exitBtnObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 50);
+        }
+        Button exitBtn = exitBtnObj.AddComponent<Button>();
+        RectTransform exitRect = exitBtnObj.GetComponent<RectTransform>();
+        // Posicionar más abajo de forma discreta
+        exitRect.anchorMin = new Vector2(0.5f, 0.12f);
+        exitRect.anchorMax = new Vector2(0.5f, 0.12f);
+        exitRect.pivot = new Vector2(0.5f, 0.5f);
 
         // Asignar referencias al controlador
         controller.pausePanel = pausePanelObj;
         controller.pauseButton = btnComp;
         controller.resumeButton = resBtn;
+        controller.exitButton = exitBtn;
 
         pausePanelObj.SetActive(false);
 

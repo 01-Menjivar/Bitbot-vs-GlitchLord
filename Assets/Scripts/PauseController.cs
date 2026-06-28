@@ -7,6 +7,7 @@ public class PauseController : MonoBehaviour
     public GameObject pausePanel;
     public Button pauseButton;
     public Button resumeButton;
+    public Button exitButton;
 
     private bool isPaused = false;
 
@@ -30,6 +31,11 @@ public class PauseController : MonoBehaviour
         if (resumeButton != null)
         {
             resumeButton.onClick.AddListener(TogglePause);
+        }
+
+        if (exitButton != null)
+        {
+            exitButton.onClick.AddListener(ExitToMenu);
         }
     }
 
@@ -88,6 +94,13 @@ public class PauseController : MonoBehaviour
                 AudioManager.Instance.PlaySFX("Click");
             }
         }
+    }
+
+    public void ExitToMenu()
+    {
+        Time.timeScale = 1f; // Restaurar el tiempo antes de salir
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Click");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
     }
 
     private void OnDestroy()
