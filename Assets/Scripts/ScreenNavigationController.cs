@@ -105,11 +105,22 @@ public class ScreenNavigationController : MonoBehaviour
         // 1. Fondo de Victoria
         CreateBackground(canvas, "UI/Screens/VictoryScreen");
 
-        // 2. Cargar sprite de botón
+        // 2. Cargar sprites de botones
+        Sprite retrySprite = Resources.Load<Sprite>("UI/Buttons/Button_Retry");
         Sprite exitSprite = Resources.Load<Sprite>("UI/Buttons/Button_Exit");
 
-        // 3. Botón "Menú Principal" (Centrado abajo)
-        CreateButton(canvas, "Menú Principal", exitSprite, new Vector2(0, -320), () =>
+        // 3. Botón "Repetir" (Lado izquierdo)
+        CreateButton(canvas, "Repetir", retrySprite, new Vector2(-300, -320), () =>
+        {
+            if (LifeManager.Instance != null)
+            {
+                LifeManager.Instance.ResetLives();
+            }
+            SceneManager.LoadScene("Level3");
+        });
+
+        // 4. Botón "Menú Principal" (Lado derecho)
+        CreateButton(canvas, "Menú Principal", exitSprite, new Vector2(300, -320), () =>
         {
             if (GameManager.Instance != null)
             {
@@ -136,6 +147,15 @@ public class ScreenNavigationController : MonoBehaviour
             scaler.referenceResolution = new Vector2(1920, 1080);
             
             canvasObj.AddComponent<GraphicRaycaster>();
+        }
+        else
+        {
+            CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+            if (scaler != null)
+            {
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920, 1080);
+            }
         }
         return canvas;
     }
