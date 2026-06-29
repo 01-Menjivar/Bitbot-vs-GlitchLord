@@ -60,7 +60,7 @@ public class ScreenNavigationController : MonoBehaviour
         Sprite exitSprite = Resources.Load<Sprite>("UI/Buttons/Button_Exit");
 
         // 3. Botón "Reintentar" (Lado izquierdo)
-        CreateButton(canvas, "Reintentar", retrySprite, new Vector2(-300, -320), () =>
+        CreateButton(canvas, "Reintentar", retrySprite, new Vector2(-300, -438), () =>
         {
             if (GameManager.Instance != null)
             {
@@ -73,7 +73,7 @@ public class ScreenNavigationController : MonoBehaviour
         });
 
         // 4. Botón "Menú Principal" (Lado derecho)
-        CreateButton(canvas, "Menú Principal", exitSprite, new Vector2(300, -320), () =>
+        CreateButton(canvas, "Menú Principal", exitSprite, new Vector2(300, -438), () =>
         {
             if (GameManager.Instance != null)
             {

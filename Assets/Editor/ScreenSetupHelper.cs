@@ -35,10 +35,10 @@ public class ScreenSetupHelper : EditorWindow
         CreateBackground(canvas, "Assets/Resources/UI/Screens/GameOverScreen.png");
 
         // 4. Crear Botón Reintentar
-        GameObject btnRetry = CreateButton(canvas, "BtnRetry", "Assets/Resources/UI/Buttons/Button_Retry.png", new Vector2(-300, -320));
+        GameObject btnRetry = CreateButton(canvas, "BtnRetry", "Assets/Resources/UI/Buttons/Button_Retry.png", new Vector2(-300, -438));
         
         // 5. Crear Botón Menú
-        GameObject btnExit = CreateButton(canvas, "BtnExit", "Assets/Resources/UI/Buttons/Button_Exit.png", new Vector2(300, -320));
+        GameObject btnExit = CreateButton(canvas, "BtnExit", "Assets/Resources/UI/Buttons/Button_Exit.png", new Vector2(300, -438));
 
         // 6. Guardar escena
         EditorSceneManager.MarkSceneDirty(scene);
