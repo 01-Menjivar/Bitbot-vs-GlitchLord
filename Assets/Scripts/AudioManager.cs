@@ -112,11 +112,13 @@ public class AudioManager : MonoBehaviour
         {
             musicSource = gameObject.AddComponent<AudioSource>();
             musicSource.loop = true;
+            musicSource.volume = 0.7f;
         }
         if (sfxSource == null)
         {
             sfxSource = gameObject.AddComponent<AudioSource>();
             sfxSource.loop = false;
+            sfxSource.volume = 0.7f;
         }
     }
 
