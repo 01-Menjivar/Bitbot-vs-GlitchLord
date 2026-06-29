@@ -49,6 +49,11 @@ public class ScreenNavigationController : MonoBehaviour
     private void SetupGameOverScene()
     {
         Debug.Log("[SNC] Inicializando interfaz de GameOverScreen...");
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX("GameOver");
+        }
+
         Canvas canvas = GetOrCreateCanvas();
         ClearCanvas(canvas);
 
@@ -89,6 +94,11 @@ public class ScreenNavigationController : MonoBehaviour
     private void SetupVictoryScene()
     {
         Debug.Log("[SNC] Inicializando interfaz de VictoryScreen...");
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX("Victory");
+        }
+
         Canvas canvas = GetOrCreateCanvas();
         ClearCanvas(canvas);
 

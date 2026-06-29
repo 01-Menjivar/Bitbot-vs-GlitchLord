@@ -12,15 +12,20 @@ public class LifeManager : MonoBehaviour
     // -------------------------------------------------------
     public static LifeManager Instance;
 
+
+
     private void Awake()
     {
         if (Instance == null)
         {
-            transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
+            if (transform.parent != null)
+            {
+                transform.SetParent(null); // Desvincular de _Managers para permitir DontDestroyOnLoad
+            }
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
         }

@@ -214,4 +214,139 @@ public class SetupLevel3Pause : MonoBehaviour
             }
         }
     }
+
+    [MenuItem("Tools/Setup MainMenu Managers and Audio")]
+    public static void SetupManagers()
+    {
+        string scenePath = "Assets/Scenes/MainMenuScene.unity";
+        var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+        // 1. Encontrar o crear _Managers
+        GameObject managersObj = GameObject.Find("_Managers");
+        if (managersObj == null)
+        {
+            managersObj = new GameObject("_Managers");
+        }
+
+        // 2. Configurar GameManager como hijo
+        GameObject gmObj = GameObject.Find("_Managers/GameManager");
+        if (gmObj == null) gmObj = new GameObject("GameManager");
+        gmObj.transform.SetParent(managersObj.transform, false);
+        if (gmObj.GetComponent<GameManager>() == null) gmObj.AddComponent<GameManager>();
+
+        // 3. Configurar UIManager como hijo
+        GameObject uiObj = GameObject.Find("_Managers/UIManager");
+        if (uiObj == null) uiObj = new GameObject("UIManager");
+        uiObj.transform.SetParent(managersObj.transform, false);
+        UIManager uiManager = uiObj.GetComponent<UIManager>();
+        if (uiManager == null) uiManager = uiObj.AddComponent<UIManager>();
+        
+        // Asignar los sprites de vida en el UIManager usando SerializedObject por encapsulación
+        SerializedObject serializedUI = new SerializedObject(uiManager);
+        serializedUI.FindProperty("coreActiveSprite").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/HUD/HUD_ProcessorCore_Active.png");
+        serializedUI.FindProperty("coreOfflineSprite").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/HUD/HUD_ProcessorCore_Offline.png");
+        serializedUI.ApplyModifiedProperties();
+
+        // 4. Configurar LifeManager como hijo
+        GameObject lmObj = GameObject.Find("_Managers/LifeManager");
+        if (lmObj == null) lmObj = new GameObject("LifeManager");
+        lmObj.transform.SetParent(managersObj.transform, false);
+        if (lmObj.GetComponent<LifeManager>() == null) lmObj.AddComponent<LifeManager>();
+
+        // 5. Configurar AudioManager como hijo
+        GameObject audioObj = GameObject.Find("_Managers/AudioManager");
+        if (audioObj == null) audioObj = new GameObject("AudioManager");
+        audioObj.transform.SetParent(managersObj.transform, false);
+        AudioManager audioManager = audioObj.GetComponent<AudioManager>();
+        if (audioManager == null) audioManager = audioObj.AddComponent<AudioManager>();
+
+        // Asignar clips de sonido al AudioManager desde Assets/Audio/
+        audioManager.menuTheme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/MenuTheme.mp3");
+        audioManager.level1Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level1Theme.mp3");
+        audioManager.level2Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level2Theme.mp3");
+        audioManager.level3Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level3Theme.mp3");
+
+        audioManager.sfxClick = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/click1.ogg");
+        audioManager.sfxError = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/interference1.wav");
+        audioManager.sfxFileCaught = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/points1.wav");
+        audioManager.sfxVirusHit = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/lose.wav");
+        audioManager.sfxBugDestroyed = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/pop.wav");
+        audioManager.sfxVictory = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/happy.wav");
+        audioManager.sfxGameOver = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/wawawawa.wav");
+
+        EditorUtility.SetDirty(uiObj);
+        EditorUtility.SetDirty(audioObj);
+        EditorUtility.SetDirty(managersObj);
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[Setup] Managers y AudioManager configurados con éxito en MainMenuScene.");
+    }
+
+    [MenuItem("Tools/Configure Audio in Active Scene")]
+    public static void ConfigureActiveSceneAudio()
+    {
+        AudioManager audioManager = FindObjectOfType<AudioManager>();
+        if (audioManager == null)
+        {
+            Debug.LogWarning("No se encontró ningún AudioManager en la escena activa.");
+            return;
+        }
+
+        audioManager.menuTheme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/MenuTheme.mp3");
+        audioManager.level1Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level1Theme.mp3");
+        audioManager.level2Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level2Theme.mp3");
+        audioManager.level3Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level3Theme.mp3");
+
+        audioManager.sfxClick = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/click1.ogg");
+        audioManager.sfxError = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/interference1.wav");
+        audioManager.sfxFileCaught = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/points1.wav");
+        audioManager.sfxVirusHit = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/lose.wav");
+        audioManager.sfxBugDestroyed = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/pop.wav");
+        audioManager.sfxVictory = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/happy.wav");
+        audioManager.sfxGameOver = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/wawawawa.wav");
+
+        EditorUtility.SetDirty(audioManager.gameObject);
+        EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        Debug.Log("[Setup] AudioManager de la escena activa configurado con éxito.");
+    }
+
+    [MenuItem("Tools/Setup Audio in All Scenes")]
+    public static void SetupAudioInAllScenes()
+    {
+        string[] scenes = {
+            "Assets/Scenes/MainMenuScene.unity",
+            "Assets/Scenes/LevelSelectionScene.unity",
+            "Assets/Scenes/Level2.unity",
+            "Assets/Scenes/Level3.unity",
+            "Assets/Scenes/GameOverScreen.unity",
+            "Assets/Scenes/VictoryScreen.unity"
+        };
+
+        foreach (string scenePath in scenes)
+        {
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            AudioManager audioManager = FindObjectOfType<AudioManager>();
+            if (audioManager != null)
+            {
+                audioManager.menuTheme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/MenuTheme.mp3");
+                audioManager.level1Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level1Theme.mp3");
+                audioManager.level2Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level2Theme.mp3");
+                audioManager.level3Theme = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Music/Level3Theme.mp3");
+
+                audioManager.sfxClick = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/click1.ogg");
+                audioManager.sfxError = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/interference1.wav");
+                audioManager.sfxFileCaught = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/points1.wav");
+                audioManager.sfxVirusHit = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/lose.wav");
+                audioManager.sfxBugDestroyed = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/UI/pop.wav");
+                audioManager.sfxVictory = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/Bitbot/happy.wav");
+                audioManager.sfxGameOver = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/SFX/General/wawawawa.wav");
+
+                EditorUtility.SetDirty(audioManager.gameObject);
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log($"[Setup] AudioManager configurado con éxito en: {scenePath}");
+            }
+        }
+    }
 }

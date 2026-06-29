@@ -239,7 +239,6 @@ public class DebugSmashController : MonoBehaviour
         if (success)
         {
             Debug.Log("DebugSmash survived successfully!");
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("Victory");
             
             if (GameManager.Instance != null)
             {
@@ -253,7 +252,6 @@ public class DebugSmashController : MonoBehaviour
         else
         {
             Debug.Log("System collapse! Infection reached 100%.");
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("GameOver");
             if (LifeManager.Instance != null)
             {
                 LifeManager.Instance.LoseLife(); 

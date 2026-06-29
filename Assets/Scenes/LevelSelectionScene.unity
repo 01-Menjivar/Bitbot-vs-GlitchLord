@@ -302,17 +302,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cd197b0d28a24db886bdc2c94dca07c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  menuTheme: {fileID: 0}
-  level1Theme: {fileID: 0}
-  level2Theme: {fileID: 0}
-  level3Theme: {fileID: 0}
-  sfxClick: {fileID: 0}
-  sfxError: {fileID: 0}
-  sfxFileCaught: {fileID: 0}
-  sfxVirusHit: {fileID: 0}
-  sfxBugDestroyed: {fileID: 0}
-  sfxVictory: {fileID: 0}
-  sfxGameOver: {fileID: 0}
+  menuTheme: {fileID: 8300000, guid: 398d7c6eb656346b78c596ff173db2a6, type: 3}
+  level1Theme: {fileID: 8300000, guid: 02b74a1ef1f39467886351c30ac3094e, type: 3}
+  level2Theme: {fileID: 8300000, guid: b567c4db50be945449b79e1cccec1727, type: 3}
+  level3Theme: {fileID: 8300000, guid: 5cf2e8454cc9141ab892565a0e7c81b5, type: 3}
+  sfxClick: {fileID: 8300000, guid: 8f101e23f9c6e459188f996edd8d1ee9, type: 3}
+  sfxError: {fileID: 8300000, guid: 4c37937a7cee848009c3a6f65c5fc9d3, type: 3}
+  sfxFileCaught: {fileID: 8300000, guid: 4f251b1379ff74549ac24929f11602b6, type: 3}
+  sfxVirusHit: {fileID: 8300000, guid: 0a2d79a1943684b50af5c134456154a2, type: 3}
+  sfxBugDestroyed: {fileID: 8300000, guid: 7ad2ea0fda89b4f7c84fc3b947f99ba7, type: 3}
+  sfxVictory: {fileID: 8300000, guid: 10bb464d513b5424182f8a759939e2cc, type: 3}
+  sfxGameOver: {fileID: 8300000, guid: d3055cc73b3954772950ce1fecec10d3, type: 3}
 --- !u!1 &653378646
 GameObject:
   m_ObjectHideFlags: 0
