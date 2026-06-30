@@ -89,6 +89,41 @@ public class ScreenNavigationController : MonoBehaviour
                 SceneManager.LoadScene("MainMenuScene");
             }
         });
+
+        // 5. Mostrar Score Final en la esquina superior izquierda (Solo para Nivel 2)
+        if (lastActiveScene == "Level2" && ScoreManager.Instance != null)
+        {
+            int finalScore = ScoreManager.Instance.GetScore();
+            CreateScoreDisplay(canvas, finalScore);
+        }
+    }
+
+    private void CreateScoreDisplay(Canvas canvas, int score)
+    {
+        GameObject scoreObj = new GameObject("FinalScoreText");
+        scoreObj.transform.SetParent(canvas.transform, false);
+        
+        Text txt = scoreObj.AddComponent<Text>();
+        txt.text = $"SCORE: {score}";
+        txt.fontSize = 48; 
+        txt.alignment = TextAnchor.UpperLeft;
+        txt.color = new Color(1f, 0.85f, 0f, 1f); // Amarillo retro
+
+        Font retroFont = Resources.Load<Font>("Fonts/PressStart2P");
+        if (retroFont != null) txt.font = retroFont;
+        else txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        // Agregar contorno para mejor legibilidad
+        Outline outline = scoreObj.AddComponent<Outline>();
+        outline.effectColor = Color.black;
+        outline.effectDistance = new Vector2(3, -3);
+
+        RectTransform rect = scoreObj.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = new Vector2(50f, -50f);
+        rect.sizeDelta = new Vector2(800f, 100f);
     }
 
     private void SetupVictoryScene()
@@ -131,6 +166,13 @@ public class ScreenNavigationController : MonoBehaviour
                 SceneManager.LoadScene("MainMenuScene");
             }
         });
+
+        // 5. Mostrar Score Final en la esquina superior izquierda (Solo para Nivel 2)
+        if (lastActiveScene == "Level2" && ScoreManager.Instance != null)
+        {
+            int finalScore = ScoreManager.Instance.GetScore();
+            CreateScoreDisplay(canvas, finalScore);
+        }
     }
 
     private Canvas GetOrCreateCanvas()
